@@ -50,7 +50,14 @@ RegisterFile * RegisterFile::getInstance()
 */
 uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 {
+   if (regNumber >= 0) & (regNumber <= 14)
+   {
+      error = false;
+      return regArray[regNumber];
+   }
+   error = true;
    return 0;
+   
 }
 
 /**
