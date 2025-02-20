@@ -72,7 +72,11 @@ uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 void RegisterFile::writeRegister(uint64_t value, int32_t regNumber, 
                                  bool & error)
 {
-   return;
+   if(regNumber >= 0 && regNumber <= 14){
+   	error = false;
+	regArray[regNumber] = value;
+   }
+   error = true;
 }
 
 /**
