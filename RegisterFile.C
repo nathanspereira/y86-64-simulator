@@ -13,6 +13,7 @@ RegisterFile * RegisterFile::regInstance = NULL;
  */
 RegisterFile::RegisterFile()
 {
+	register regArray = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 }
 
 /**
@@ -25,7 +26,11 @@ RegisterFile::RegisterFile()
  */
 RegisterFile * RegisterFile::getInstance()
 {
-   return NULL;
+	if(regInstance == NULL){
+		register newReg = new register();
+		*regInstance= &newReg;
+	}
+   	return regInstance;
 }
 
 /**
