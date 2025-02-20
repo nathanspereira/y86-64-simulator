@@ -26,7 +26,12 @@ ConditionCodes::ConditionCodes()
  */
 ConditionCodes * ConditionCodes::getInstance()
 {
-   return NULL;
+   if (ccInstance == NULL)
+   {
+      ccInstance = &ConditionCodes();
+      
+   }
+   return ccInstance;
 }
 
 /*
