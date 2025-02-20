@@ -13,6 +13,7 @@ RegisterFile * RegisterFile::regInstance = NULL;
  */
 RegisterFile::RegisterFile()
 {
+   
 }
 
 /**
@@ -25,8 +26,14 @@ RegisterFile::RegisterFile()
  */
 RegisterFile * RegisterFile::getInstance()
 {
-   return NULL;
+   if regInstance == NULL
+   {
+      RegisterFile();
+      regInstance = &RegisterFile;
+   }
+   return regInstance;
 }
+
 
 /**
  * readRegister
