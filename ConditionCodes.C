@@ -47,6 +47,9 @@ ConditionCodes * ConditionCodes::getInstance()
  */
 bool ConditionCodes::getConditionCode(int32_t ccNum, bool & error)
 {
+	if(!error){
+   		return getBits(codes, ccNum, ccNum);
+	}
    //Use your getBits in Tools.C.
    //Don't use "magic" numbers.
    return false;
@@ -67,6 +70,9 @@ bool ConditionCodes::getConditionCode(int32_t ccNum, bool & error)
 void ConditionCodes::setConditionCode(bool value, int32_t ccNum, 
                                       bool & error)
 {
+	if(!error){
+		setBits(codes, ccNum, ccNum);
+	}
    //Use your setBits and clearBits in Tools.C. 
    //Don't use "magic" numbers in your code.
    return;
