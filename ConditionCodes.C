@@ -13,7 +13,7 @@ ConditionCodes * ConditionCodes::ccInstance = NULL;
  */
 ConditionCodes::ConditionCodes()
 {
-   bool ConditionCodes = 0;
+   int32_t ConditionCodes = 0;
 }
 
 /**
