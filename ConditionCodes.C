@@ -71,7 +71,8 @@ void ConditionCodes::setConditionCode(bool value, int32_t ccNum,
                                       bool & error)
 {
 	if(!error){
-		setBits(codes, ccNum, ccNum);
+		ccNum = setBits(codes, ccNum, ccNum);
+      clearBits(codes, ccNum, ccNum);
 	}
    //Use your setBits and clearBits in Tools.C. 
    //Don't use "magic" numbers in your code.
