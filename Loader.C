@@ -61,6 +61,10 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
+	if(strlen(line) > 0 && line[0] == '0'){
+		return true;
+	}
+	return false;
 }
 
 /*
@@ -78,6 +82,10 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
+	if(strlen(line) > DATABEGIN && line[DATABEGIN].contains(" ")){
+		return true;
+	}
+	return false;
 }
 
 /*
@@ -91,6 +99,10 @@ bool Loader::hasData(std::string line)
  */
 bool Loader::hasComment(std::string line)
 {
+	if(strlen(line) >= COMMENT && line[COMMENT] == '|'){
+		return true;
+	}
+	return false;
 }
 
 /*
@@ -109,6 +121,17 @@ void Loader::loadLine(std::string line)
    //Use the convert method to convert the characters
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
+   
+	int32_t address = convert(line, ADDRBEGIN, (ADDEREND-ADDERBEGIN));
+	bool imem_error;
+	Memory *memory = Memory :: getInstance();
+	for(int i = DATABEGIN; i < COMMENT; i+2){
+		uint_t byte = convert(line, dataIndex, 2);
+		memory->putByte(byte, address, imem_error);
+		address++;
+	}
+	int32_t lastAddress = address -1;
+
 }
 
 /*
@@ -127,6 +150,11 @@ void Loader::loadLine(std::string line)
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
+	int str_len = strlen(line);
+	char* sub = (char*)malloc(sizeof(char) * (len + 1));
+	strncpy(sub, line + start, length);
+	sub[len] = '\0';
+	return strtol(sub.c_str(), nullptr, 16);
 }
 
 /*
@@ -145,34 +173,65 @@ bool Loader::hasErrors(std::string line)
    //1) line is at least COMMENT characters long and contains a '|' in 
    //   column COMMENT. If not, return true
    //   Hint: use hasComment
-   //
+   
+	if (!hasComment(line)){
+		return true;
+	}
+
    //2) check whether line has an address.  If it doesn't,
    //   return result of isSpaces (line must be all spaces up
    //   to the | character)
    //   Hint: use hasAddress and isSpaces
-   //
+   
+	if(!hasAddress(line)){
+		return isSpaces(line, 0, COMMENT);
+	}
+
    //3) return true if the address is invalid
    //   Hint: use errorAddress 
-   //
+   
+	if(errorAddr(line)){
+		return true;
+	}
+
    //4) check whether the line has data. If it doesn't
    //   return result of isSpaces (line must be all spaces from
    //   after the address up to the | character)
    //   Hint: use hasData and isSpaces
-   //
+
+	if(!hasData(line)){
+		return isSpaces(line, ADDREND, COMMENT);
+	}
+
    //5) if you get past 4), line has an address and data. Check to
    //   make sure the data is valid using errorData
    //   Hint: use errorData
-   //
+
+	int32_t errorDataRes = 0;
+	if(errorData(line, errorDataRes)){
+		return true;
+	}
+
    //6) if you get past 5), line has a valid address and valid data.
    //   Make sure that the address on this line is > the last address
    //   stored to (lastAddress is a private data member)
    //   Hint: use convert to convert address to a number and compare
    //   to lastAddress
-   //
+
+	int32_t currentAddress = convert(line, ADDERBEGIN, ADDEREND-ADDERBEGIN);
+	if(currentAddress <= lastAddress){
+		return true;
+	}
+
+
    //7) Make sure that the last address of the data to be stored
    //   by this line doesn't exceed the memory size
    //   Hint: use numDBytes as set by errorData, MEMSIZE in Memory.h,
    //         and addr returned by convert
+
+	if((currentAddress + errorDataRes) > MEMSIZE){
+		return true;
+	}
 
    // if control reaches here, no errors found
    return false;
