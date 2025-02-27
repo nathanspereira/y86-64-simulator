@@ -13,6 +13,11 @@ RegisterFile * RegisterFile::regInstance = NULL;
  */
 RegisterFile::RegisterFile()
 {
+	for (int i = 0; i < REGSIZE; i++)
+   {
+      reg[i] = 0;
+   }
+ 
 }
 
 /**
@@ -25,8 +30,13 @@ RegisterFile::RegisterFile()
  */
 RegisterFile * RegisterFile::getInstance()
 {
-   return NULL;
+   if (regInstance == NULL)
+   {
+      regInstance = new RegisterFile();
+   }
+   return regInstance;
 }
+
 
 /**
  * readRegister
@@ -42,7 +52,14 @@ RegisterFile * RegisterFile::getInstance()
 */
 uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 {
+   if ((regNumber >= 0) && (regNumber <= 14))
+   {
+      error = false;
+      return reg[regNumber];
+   }
+   error = true;
    return 0;
+   
 }
 
 /**
@@ -57,7 +74,16 @@ uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 void RegisterFile::writeRegister(uint64_t value, int32_t regNumber, 
                                  bool & error)
 {
-   return;
+   if ((regNumber >= 0) && (regNumber <= 14))
+   {
+   	error = false;
+	   reg[regNumber] = value;
+   }
+   else
+   {
+      error = true;
+   }
+   
 }
 
 /**
