@@ -18,7 +18,7 @@ clean:
 
 run:
 	make clean
-	make lab4
+	make lab5
 	./run.sh
 
 removeR:
