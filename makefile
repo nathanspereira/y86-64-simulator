@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -g -c -Wall -std=c++11 -O0
-OBJ = lab5.o Loader.o Memory.o ConditionCodes.o RegisterFile.o
+OBJ = lab5.o Loader.o Memory.o ConditionCodes.o RegisterFile.o Tools.o
 
 
 .C.o:
@@ -10,11 +10,11 @@ lab5: $(OBJ)
 
 lab5.o : Loader.h ConditionCodes.h Memory.h RegisterFile.h
 
-Loader.o: Loader.h
+Loader.o: Loader.h Memory.h
 
-ConditionCodes.o : ConditionCodes.h
+ConditionCodes.o : ConditionCodes.h Tools.h
 
-Memory.o : Memory.h
+Memory.o : Memory.h Tools.h
 
 RegisterFile.o: RegisterFile.h
 
