@@ -152,9 +152,9 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
    //Hint: you need something to convert a string to an int such as strtol 
 	int str_len = strlen(line);
 	char* sub = (char*)malloc(sizeof(char) * (len + 1));
-	strncpy(sub, line + start, length);
+	strncpy(sub, line + start, str_len);
 	sub[len] = '\0';
-	return strtol(sub.c_str(), nullptr, 16);
+	return strtol(sub, nullptr, 16);
 }
 
 /*
@@ -218,7 +218,7 @@ bool Loader::hasErrors(std::string line)
    //   Hint: use convert to convert address to a number and compare
    //   to lastAddress
 
-	int32_t currentAddress = convert(line, ADDERBEGIN, ADDEREND-ADDERBEGIN);
+	int32_t currentAddress = convert(line, ADDRBEGIN, ADDREND-ADDRBEGIN);
 	if(currentAddress <= lastAddress){
 		return true;
 	}
@@ -316,8 +316,12 @@ bool Loader::badFile(std::string filename)
 		return true;
 	}
 
-	std::string extension = filename.substr(filename.length() - 3);
-	if(strcmp(".yo", extension) != 0) {
+	//std::string extension = filename.substr(filename.length() - 3);
+   char first = filename[strlen(filename - 3)]; 
+   char second = filename[strlen(filename - 2)]; 
+   char third = filename[strlen(filename - 1)]; 
+
+	if(('.'!= first) & ('y' != second) & ('o' != third)) {
 		return true;
 	}
 	return false;
