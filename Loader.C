@@ -125,7 +125,7 @@ void Loader::loadLine(std::string line)
 	int32_t address = convert(line, ADDRBEGIN, (ADDREND-ADDRBEGIN));
 	bool imem_error;
 	Memory *memory = Memory :: getInstance();
-	for(int i = DATABEGIN; i < COMMENT; i+2){
+	for(int i = DATABEGIN; i < COMMENT; i+= 2){
 		int32_t byte = convert(line, DATABEGIN, 2);
 		memory->putByte(byte, address, imem_error);
 		address++;
