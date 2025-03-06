@@ -311,5 +311,15 @@ bool Loader::badFile(std::string filename)
 {
    //Hint: use std::string length method and C strcmp (or std::string find
    //      or std::string at or ...)
-   
+  
+	if(filename.length() < 4){
+		return true;
+	}
+
+	std::string extension = filename.substr(filename.length() - 3);
+	if(strcmp(".yo", extension) != 0) {
+		return true;
+	}
+	return false;
+
 }
