@@ -82,7 +82,7 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
-	if(line.length() > DATABEGIN && line[DATABEGIN].contains(" ")){
+	if(line.length() > DATABEGIN && line[DATABEGIN] != ''){
 		return true;
 	}
 	return false;
@@ -150,10 +150,7 @@ void Loader::loadLine(std::string line)
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
-	int str_len = line.length();
-	char* sub = (char*)malloc(sizeof(char) * (len + 1));
-	strncpy(sub, line + start, str_len);
-	sub[len] = '\0';
+	std::string sub = line.substr(start, len);
 	return strtol(sub, nullptr, 16);
 }
 
