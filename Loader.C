@@ -61,7 +61,7 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
-	if(strlen(line) > 0 && line[0] == '0'){
+	if(line.length() > 0 && line[0] == '0'){
 		return true;
 	}
 	return false;
@@ -82,7 +82,7 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
-	if(strlen(line) > DATABEGIN && line[DATABEGIN].contains(" ")){
+	if(line.length() > DATABEGIN && line[DATABEGIN].contains(" ")){
 		return true;
 	}
 	return false;
@@ -99,7 +99,7 @@ bool Loader::hasData(std::string line)
  */
 bool Loader::hasComment(std::string line)
 {
-	if(strlen(line) >= COMMENT && line[COMMENT] == '|'){
+	if(line.length() >= COMMENT && line[COMMENT] == '|'){
 		return true;
 	}
 	return false;
@@ -150,7 +150,7 @@ void Loader::loadLine(std::string line)
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
-	int str_len = strlen(line);
+	int str_len = line.length();
 	char* sub = (char*)malloc(sizeof(char) * (len + 1));
 	strncpy(sub, line + start, str_len);
 	sub[len] = '\0';
@@ -317,9 +317,9 @@ bool Loader::badFile(std::string filename)
 	}
 
 	//std::string extension = filename.substr(filename.length() - 3);
-   char first = filename[strlen(filename - 3)]; 
-   char second = filename[strlen(filename - 2)]; 
-   char third = filename[strlen(filename - 1)]; 
+   char first = filename[(filename.length())- 3]; 
+   char second = filename[(filename.length()) - 2]; 
+   char third = filename[(filename.length())- 1]; 
 
 	if(('.'!= first) & ('y' != second) & ('o' != third)) {
 		return true;
