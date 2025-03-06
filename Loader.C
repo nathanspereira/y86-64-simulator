@@ -125,7 +125,7 @@ void Loader::loadLine(std::string line)
 	int32_t address = convert(line, ADDRBEGIN, (ADDREND-ADDRBEGIN));
 	bool imem_error;
 	Memory *memory = Memory :: getInstance();
-	for(int i = DATABEGIN; i < COMMENT; i+= 2){
+	for(int i = DATABEGIN; i < COMMENT; i+=2){
 		int32_t byte = convert(line, DATABEGIN, 2);
 		memory->putByte(byte, address, imem_error);
 		address++;
@@ -171,66 +171,66 @@ bool Loader::hasErrors(std::string line)
    //   column COMMENT. If not, return true
    //   Hint: use hasComment
    
-	// if (!hasComment(line)){
-	// 	return true;
-	// }
+	if (!hasComment(line)){
+		return true;
+	}
 
-   // //2) check whether line has an address.  If it doesn't,
-   // //   return result of isSpaces (line must be all spaces up
-   // //   to the | character)
-   // //   Hint: use hasAddress and isSpaces
+   //2) check whether line has an address.  If it doesn't,
+   //   return result of isSpaces (line must be all spaces up
+   //   to the | character)
+   //   Hint: use hasAddress and isSpaces
    
-	// if(!hasAddress(line)){
-	// 	return isSpaces(line, 0, COMMENT);
-	// }
+	if(!hasAddress(line)){
+		return isSpaces(line, 0, COMMENT);
+	}
 
-   // //3) return true if the address is invalid
-   // //   Hint: use errorAddress 
+   //3) return true if the address is invalid
+   //   Hint: use errorAddress 
    
-	// if(errorAddr(line)){
-	// 	return true;
-	// }
+	if(errorAddr(line)){
+		return true;
+	}
 
-   // //4) check whether the line has data. If it doesn't
-   // //   return result of isSpaces (line must be all spaces from
-   // //   after the address up to the | character)
-   // //   Hint: use hasData and isSpaces
+   //4) check whether the line has data. If it doesn't
+   //   return result of isSpaces (line must be all spaces from
+   //   after the address up to the | character)
+   //   Hint: use hasData and isSpaces
 
-	// if(!hasData(line)){
-	// 	return isSpaces(line, ADDREND, COMMENT);
-	// }
+	if(!hasData(line)){
+		return isSpaces(line, ADDREND, COMMENT);
+	}
 
-   // //5) if you get past 4), line has an address and data. Check to
-   // //   make sure the data is valid using errorData
-   // //   Hint: use errorData
+   //5) if you get past 4), line has an address and data. Check to
+   //   make sure the data is valid using errorData
+   //   Hint: use errorData
 
-	// int32_t errorDataRes = 0;
-	// if(errorData(line, errorDataRes)){
-	// 	return true;
-	// }
+	int32_t errorDataRes = 0;
+	if(errorData(line, errorDataRes)){
+		return true;
+	}
 
-   // //6) if you get past 5), line has a valid address and valid data.
-   // //   Make sure that the address on this line is > the last address
-   // //   stored to (lastAddress is a private data member)
-   // //   Hint: use convert to convert address to a number and compare
-   // //   to lastAddress
+   //6) if you get past 5), line has a valid address and valid data.
+   //   Make sure that the address on this line is > the last address
+   //   stored to (lastAddress is a private data member)
+   //   Hint: use convert to convert address to a number and compare
+   //   to lastAddress
 
-	// int32_t currentAddress = convert(line, ADDRBEGIN, ADDREND-ADDRBEGIN);
-	// if(currentAddress <= lastAddress){
-	// 	return true;
-	// }
+	int32_t currentAddress = convert(line, ADDRBEGIN, ADDREND-ADDRBEGIN);
+	if(currentAddress <= lastAddress){
+		return true;
+	}
 
 
-   // //7) Make sure that the last address of the data to be stored
-   // //   by this line doesn't exceed the memory size
-   // //   Hint: use numDBytes as set by errorData, MEMSIZE in Memory.h,
-   // //         and addr returned by convert
+   //7) Make sure that the last address of the data to be stored
+   //   by this line doesn't exceed the memory size
+   //   Hint: use numDBytes as set by errorData, MEMSIZE in Memory.h,
+   //         and addr returned by convert
 
-	// if((currentAddress + errorDataRes) > MEMSIZE){
-	// 	return true;
-	// }
+	if((currentAddress + errorDataRes) > MEMSIZE){
+		return true;
+	}
 
-   // // if control reaches here, no errors found
+   // if control reaches here, no errors found
    return false;
 }
 
