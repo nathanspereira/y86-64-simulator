@@ -82,7 +82,7 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
-	if(line.length() > DATABEGIN && line[DATABEGIN] != ''){
+	if(line.length() > DATABEGIN && line[DATABEGIN] != ' '){
 		return true;
 	}
 	return false;
@@ -122,11 +122,11 @@ void Loader::loadLine(std::string line)
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
    
-	int32_t address = convert(line, ADDRBEGIN, (ADDEREND-ADDERBEGIN));
+	int32_t address = convert(line, ADDRBEGIN, (ADDREND-ADDRBEGIN));
 	bool imem_error;
 	Memory *memory = Memory :: getInstance();
 	for(int i = DATABEGIN; i < COMMENT; i+2){
-		uint_t byte = convert(line, dataIndex, 2);
+		int32_t byte = convert(line, DATABEGIN, 2);
 		memory->putByte(byte, address, imem_error);
 		address++;
 	}
@@ -151,7 +151,7 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
 	std::string sub = line.substr(start, len);
-	return strtol(sub, nullptr, 16);
+	return strtol(sub.c_str(), nullptr, 16);
 }
 
 /*
