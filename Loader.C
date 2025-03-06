@@ -311,5 +311,5 @@ bool Loader::badFile(std::string filename)
 {
    //Hint: use std::string length method and C strcmp (or std::string find
    //      or std::string at or ...)
-   return true;
+   
 }
