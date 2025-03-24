@@ -61,10 +61,7 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
-	if(line.length() > 0 && line[0] == '0'){
-		return true;
-	}
-	return false;
+	return line[0] == '0';
 }
 
 /*
@@ -82,10 +79,7 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
-	if(line.length() > DATABEGIN && line[DATABEGIN] != ' '){
-		return true;
-	}
-	return false;
+	return line[DATABEGIN] != ' ';
 }
 
 /*
@@ -99,7 +93,8 @@ bool Loader::hasData(std::string line)
  */
 bool Loader::hasComment(std::string line)
 {
-	if(line.length() >= COMMENT && line[COMMENT] == '|'){
+	if(line.length() >= COMMENT && line[COMMENT] == '|')
+   {
 		return true;
 	}
 	return false;
@@ -122,15 +117,16 @@ void Loader::loadLine(std::string line)
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
    
-	int32_t address = convert(line, ADDRBEGIN, (ADDREND-ADDRBEGIN));
+	int32_t address = Loader::convert(line, ADDRBEGIN, (ADDREND-ADDRBEGIN));
 	bool imem_error;
 	Memory *memory = Memory :: getInstance();
-	for(int i = DATABEGIN; i < COMMENT; i+=2){
-		int32_t byte = convert(line, DATABEGIN, 2);
+	for(int i = DATABEGIN; i < COMMENT; i+=2)
+   {
+		int32_t byte = convert(line, i, 2);
 		memory->putByte(byte, address, imem_error);
 		address++;
 	}
-	int32_t lastAddress = address -1;
+	lastAddress = address -1;
 
 }
 
@@ -150,8 +146,27 @@ void Loader::loadLine(std::string line)
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
-	std::string sub = line.substr(start, len);
-	return strtol(sub.c_str(), nullptr, 16);
+   
+   // char String[32];
+   // for (int i = 0; i < std::size(line); i++)
+   // {
+   //    String[i] = line[i];
+   // }
+   std::string sub = line.std::string::substr(start, len);
+   // char * endPoint =  &String[start + len];
+   // char ** doublePointer = &endPoint;
+   
+   int32_t answer = std::strtol(&sub[start], NULL, 16);
+
+   printf("XXXXXXXXXXXXX");
+   printf("INPUT: %c", sub);
+   printf("OUTPUT: %d", answer);
+   printf("XXXXXXXXXXXXX");
+
+   return strtol(&sub[0], NULL, 16);
+
+	
+	//return strtol(sub.c_str(), nullptr, 16);
 }
 
 /*
@@ -180,14 +195,16 @@ bool Loader::hasErrors(std::string line)
    //   to the | character)
    //   Hint: use hasAddress and isSpaces
    
-	if(!hasAddress(line)){
-		return isSpaces(line, 0, COMMENT);
+	if(!hasAddress(line))
+   {
+		return !isSpaces(line, 0, COMMENT - 1);
 	}
 
    //3) return true if the address is invalid
    //   Hint: use errorAddress 
    
-	if(errorAddr(line)){
+	if(errorAddr(line))
+   {
 		return true;
 	}
 
@@ -196,8 +213,9 @@ bool Loader::hasErrors(std::string line)
    //   after the address up to the | character)
    //   Hint: use hasData and isSpaces
 
-	if(!hasData(line)){
-		return isSpaces(line, ADDREND, COMMENT);
+	if(!hasData(line))
+   {
+		return !isSpaces(line, ADDREND, COMMENT - 1);
 	}
 
    //5) if you get past 4), line has an address and data. Check to
@@ -254,6 +272,8 @@ bool Loader::hasErrors(std::string line)
 bool Loader::errorData(std::string line, int32_t & numDBytes)
 {
    //Hint: use isxdigit and isSpaces
+   for (int i = DATABEGIN;  )
+   if isxdigit(i)
 }
 
 /*
@@ -268,6 +288,7 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
 bool Loader::errorAddr(std::string line)
 {
    //Hint: use isxdigit
+
 }
 
 /* 
@@ -284,6 +305,12 @@ bool Loader::errorAddr(std::string line)
  */
 bool Loader::isSpaces(std::string line, int32_t start, int32_t end)
 {
+   bool equal = true;
+   for (int i = start; i < end; i++)
+   {
+      equal = equal && line[i] == ' ';
+   }
+   return equal;
 }
 
 /*

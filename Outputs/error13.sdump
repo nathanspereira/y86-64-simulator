@@ -1,4 +1,4 @@
-Error on line 1:                             | # Execution begins at address 0 
+Error on line 2: 0x000:                      | 	.pos 0 
 Load error.
 Usage: lab5 <file.yo>
 
