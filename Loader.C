@@ -144,15 +144,21 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
    
-   std::string sub = line.std::string::substr(start, len);
-   int32_t answer = std::strtol(&sub[start], NULL, 16);
+   //std::string sub = line.std::string::substr(start, len);
+   char sub[len];
+   strcpy(sub, line.substr(start, len).c_str());
 
-   printf("XXXXXXXXXXXXX");
-   printf("INPUT: %c", sub);
-   printf("OUTPUT: %d", answer);
-   printf("XXXXXXXXXXXXX");
 
-   return strtol(&sub[0], NULL, 16);
+
+
+   int32_t answer = std::strtol(&sub[0], NULL, 16);
+
+   //printf("XXXXXXXXXXXXX");
+   //printf("INPUT: %c", sub);
+   //printf("OUTPUT: %d", answer);
+   //printf("XXXXXXXXXXXXX");
+
+   return answer;
 
 	
 	//return strtol(sub.c_str(), nullptr, 16);
@@ -296,9 +302,9 @@ bool Loader::errorAddr(std::string line)
 {
    //Hint: use isxdigit
    bool error = false;
-   for (int i = 0; i < 3 && !error; i++)
+   for (int i = 2; i <= 4 && !error; i++)
    {
-      error = isxdigit(line[i]);
+      error =  !isxdigit(line[i]);
    }
    return error;
 }
@@ -350,7 +356,8 @@ bool Loader::badFile(std::string filename)
    //Hint: use std::string length method and C strcmp (or std::string find
    //      or std::string at or ...)
   
-	if(filename.length() < 4){
+	if(filename.length() <= 4)
+   {
 		return true;
 	}
 
@@ -359,7 +366,7 @@ bool Loader::badFile(std::string filename)
    char second = filename[(filename.length()) - 2]; 
    char third = filename[(filename.length())- 1]; 
 
-	return (('.'== first) && ('y' == second) && ('o' == third));
+	return !(('.'== first) && ('y' == second) && ('o' == third));
 		
 
 }
