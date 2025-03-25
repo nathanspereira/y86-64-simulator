@@ -93,11 +93,8 @@ bool Loader::hasData(std::string line)
  */
 bool Loader::hasComment(std::string line)
 {
-	if(line.length() >= COMMENT && line[COMMENT] == '|')
-   {
-		return true;
-	}
-	return false;
+	return (line.length() >= COMMENT && line[COMMENT] == '|');
+
 }
 
 /*
@@ -117,17 +114,17 @@ void Loader::loadLine(std::string line)
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
    
-	int32_t address = Loader::convert(line, ADDRBEGIN, (ADDREND-ADDRBEGIN));
+	int32_t address = convert(line, ADDRBEGIN, (ADDREND - ADDRBEGIN));
 	bool imem_error;
 	Memory *memory = Memory :: getInstance();
 	for(int i = DATABEGIN; i < COMMENT; i+=2)
    {
 		int32_t byte = convert(line, i, 2);
+      
 		memory->putByte(byte, address, imem_error);
 		address++;
 	}
 	lastAddress = address -1;
-
 }
 
 /*
@@ -147,15 +144,7 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol 
    
-   // char String[32];
-   // for (int i = 0; i < std::size(line); i++)
-   // {
-   //    String[i] = line[i];
-   // }
    std::string sub = line.std::string::substr(start, len);
-   // char * endPoint =  &String[start + len];
-   // char ** doublePointer = &endPoint;
-   
    int32_t answer = std::strtol(&sub[start], NULL, 16);
 
    printf("XXXXXXXXXXXXX");
@@ -258,22 +247,40 @@ bool Loader::hasErrors(std::string line)
  * in the line is invalid. 
  *
  * Valid data consists of characters in the range
- * '0' .. '9','a' ... 'f', and 'A' .. 'F' (valid hex digits). 
- * The data digits start at index DATABEGIN.
- * The hex digits come in pairs, thus there must be an even number of them.
- * In addition, the characters after the last hex digit up to the
- * '|' character at index COMMENT must be spaces. 
+ * '0' .. '9','a' ... 'f', and 'A' .. 'F' (valid hex digits).                    STD::ISXDIGIT(LINE[I])
+ * The data digits start at index DATABEGIN.                                     i = DATABEGIN  
+ * The hex digits come in pairs, thus there must be an even number of them.      (variable that represnets hexdigits) % 2 == 0
+ * In addition, the characters after the last hex digit up to the                
+ * '|' character at index COMMENT must be spaces.                                if statement after |
  * If these conditions are met, errorData returns false, else errorData
- * returns true.
+ * returns true.                                                                 
  *
  * @param line - input line from the .yo file
- * @return numDBytes is set to the number of data bytes on the line
+ * @return numDBytes is set to the number of data bytes on the line              
  */
 bool Loader::errorData(std::string line, int32_t & numDBytes)
 {
    //Hint: use isxdigit and isSpaces
-   for (int i = DATABEGIN;  )
-   if isxdigit(i)
+   bool error = false;
+   int i = DATABEGIN;
+   while (!error && i < COMMENT) // stops at index comment
+   {
+      if (!std::isxdigit(line[i]))
+      {
+         error = true;
+      }
+      numDBytes++;
+      i++;
+   }
+   
+   if (!error)
+   {
+      error = (!isSpaces(line, line[i], line[50])) && (numDBytes % 2 == 0);
+   }
+
+   return error;
+
+   
 }
 
 /*
@@ -288,7 +295,12 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
 bool Loader::errorAddr(std::string line)
 {
    //Hint: use isxdigit
-
+   bool error = false;
+   for (int i = 0; i < 3 && !error; i++)
+   {
+      error = isxdigit(line[i]);
+   }
+   return error;
 }
 
 /* 
@@ -306,9 +318,11 @@ bool Loader::errorAddr(std::string line)
 bool Loader::isSpaces(std::string line, int32_t start, int32_t end)
 {
    bool equal = true;
-   for (int i = start; i < end; i++)
+   int i = start;
+   while (equal && i < end)
    {
       equal = equal && line[i] == ' ';
+      i++;
    }
    return equal;
 }
@@ -345,9 +359,7 @@ bool Loader::badFile(std::string filename)
    char second = filename[(filename.length()) - 2]; 
    char third = filename[(filename.length())- 1]; 
 
-	if(('.'!= first) & ('y' != second) & ('o' != third)) {
-		return true;
-	}
-	return false;
+	return (('.'== first) && ('y' == second) && ('o' == third));
+		
 
 }
