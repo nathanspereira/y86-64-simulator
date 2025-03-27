@@ -114,7 +114,7 @@ void Loader::loadLine(std::string line)
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
    
-	int32_t address = convert(line, ADDRBEGIN, (ADDREND - ADDRBEGIN));
+	int32_t address = convert(line, ADDRBEGIN, (ADDREND - ADDRBEGIN + 1));
 	bool imem_error;
 	Memory *memory = Memory :: getInstance();
 	for(int i = DATABEGIN; i < COMMENT; i+=2)
@@ -210,7 +210,7 @@ bool Loader::hasErrors(std::string line)
 
 	if(!hasData(line))
    {
-		return !isSpaces(line, ADDREND, COMMENT - 1);
+		return isSpaces(line, ADDREND, COMMENT);
 	}
 
    //5) if you get past 4), line has an address and data. Check to
@@ -218,30 +218,31 @@ bool Loader::hasErrors(std::string line)
    //   Hint: use errorData
 
 	int32_t errorDataRes = 0;
-	if(errorData(line, errorDataRes)){
+	if(errorData(line, errorDataRes))
+   {
 		return true;
 	}
 
-   //6) if you get past 5), line has a valid address and valid data.
-   //   Make sure that the address on this line is > the last address
-   //   stored to (lastAddress is a private data member)
-   //   Hint: use convert to convert address to a number and compare
-   //   to lastAddress
+   // //6) if you get past 5), line has a valid address and valid data.
+   // //   Make sure that the address on this line is > the last address
+   // //   stored to (lastAddress is a private data member)
+   // //   Hint: use convert to convert address to a number and compare
+   // //   to lastAddress
 
-	int32_t currentAddress = convert(line, ADDRBEGIN, ADDREND-ADDRBEGIN);
-	if(currentAddress <= lastAddress){
-		return true;
-	}
+	// int32_t currentAddress = convert(line, ADDRBEGIN, ADDREND-ADDRBEGIN);
+	// if(currentAddress <= lastAddress){
+	// 	return true;
+	// }
 
 
-   //7) Make sure that the last address of the data to be stored
-   //   by this line doesn't exceed the memory size
-   //   Hint: use numDBytes as set by errorData, MEMSIZE in Memory.h,
-   //         and addr returned by convert
+   // //7) Make sure that the last address of the data to be stored
+   // //   by this line doesn't exceed the memory size
+   // //   Hint: use numDBytes as set by errorData, MEMSIZE in Memory.h,
+   // //         and addr returned by convert
 
-	if((currentAddress + errorDataRes) > MEMSIZE){
-		return true;
-	}
+	// if((currentAddress + errorDataRes) > MEMSIZE){
+	// 	return true;
+	// }
 
    // if control reaches here, no errors found
    return false;
@@ -267,25 +268,21 @@ bool Loader::hasErrors(std::string line)
 bool Loader::errorData(std::string line, int32_t & numDBytes)
 {
    //Hint: use isxdigit and isSpaces
-   bool error = false;
    int i = DATABEGIN;
-   while (!error && i < COMMENT) // stops at index comment
+
+   while (i < COMMENT) 
    {
-      if (!std::isxdigit(line[i]))
+
+      if ((!std::isxdigit(line[i])) && (!isSpaces(line, i, COMMENT)))
       {
-         error = true;
+         return true;
       }
-      numDBytes++;
-      i++;
+      if (i % 2 == 0) numDBytes ++;
+      i ++;
    }
    
-   if (!error)
-   {
-      error = (!isSpaces(line, line[i], line[50])) && (numDBytes % 2 == 0);
-   }
-
-   return error;
-
+   
+   return (!isSpaces(line, i, COMMENT)) && (numDBytes % 2 == 0);
    
 }
 
@@ -302,10 +299,12 @@ bool Loader::errorAddr(std::string line)
 {
    //Hint: use isxdigit
    bool error = false;
-   for (int i = 2; i <= 4 && !error; i++)
+   for (int i = 2; i < 4 && !error; i++)
    {
       error =  !isxdigit(line[i]);
    }
+   if (line[5] != ':') error = true;
+   
    return error;
 }
 
