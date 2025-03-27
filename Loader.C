@@ -210,12 +210,12 @@ bool Loader::hasErrors(std::string line)
 
 	if(!hasData(line))
    {
-		return isSpaces(line, ADDREND, COMMENT);
+		return !isSpaces(line, ADDREND + 2, COMMENT - 1);
 	}
 
-   //5) if you get past 4), line has an address and data. Check to
-   //   make sure the data is valid using errorData
-   //   Hint: use errorData
+   // //5) if you get past 4), line has an address and data. Check to
+   // //   make sure the data is valid using errorData
+   // //   Hint: use errorData
 
 	int32_t errorDataRes = 0;
 	if(errorData(line, errorDataRes))
@@ -288,12 +288,12 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
       	i= i+2;
 
 }
-	printf("XXXXXXXXXXXXXXXXXXXXXXX\n");
-	printf("%d\n", i);
-	std::cout << "line:" << line << "\n";
+	// printf("XXXXXXXXXXXXXXXXXXXXXXX\n");
+	// printf("%d\n", i);
+	// std::cout << "line:" << line << "\n";
  //  }
    
-   return ((!isSpaces(line, i, COMMENT)) && (i % 2 == 0));
+   return ((!isSpaces(line, i, COMMENT)) && (i % 2 != 0));
    
 }
 
@@ -309,7 +309,9 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
 bool Loader::errorAddr(std::string line)
 {
    //Hint: use isxdigit
+   
    bool error = false;
+   if (line[0] != '0' || line[1] != 'x') error = true;
    for (int i = 2; i < 4 && !error; i++)
    {
       error =  !isxdigit(line[i]);
