@@ -270,19 +270,30 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
    //Hint: use isxdigit and isSpaces
    int i = DATABEGIN;
 
-   while (i < COMMENT) 
+   while (!isSpaces(line, i, COMMENT)) 
    {
 
-      if ((!std::isxdigit(line[i])) && (!isSpaces(line, i, COMMENT)))
+      if ( !isxdigit(line[i]))
       {
-         return true;
+	      if(!isSpaces(line, i, COMMENT)){
+         	return true;
+	      }
       }
-      if (i % 2 == 0) numDBytes ++;
-      i ++;
-   }
+      if ( !isxdigit(line[i+1]) ) {
+		      if(!isSpaces(line, i+1, COMMENT) ){
+      			return true;
+		      }
+      }
+	numDBytes ++;
+      	i= i+2;
+
+}
+	printf("XXXXXXXXXXXXXXXXXXXXXXX\n");
+	printf("%d\n", i);
+	std::cout << "line:" << line << "\n";
+ //  }
    
-   
-   return (!isSpaces(line, i, COMMENT)) && (numDBytes % 2 == 0);
+   return ((!isSpaces(line, i, COMMENT)) && (i % 2 == 0));
    
 }
 
