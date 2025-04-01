@@ -64,8 +64,10 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
 	 //  retVal = retVal << (i * 8);
    //}
    //return retVal;
-   
-   int64_t word = 0;
+
+   uint64_t word = 0;
+
+
  	if (address % 8 == 0 && address >= 0 && address + 7 <= MEMSIZE)
    {
    	imem_error = false;
