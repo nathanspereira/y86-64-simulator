@@ -5,6 +5,7 @@
 #include "PipeReg.h"
 #include "F.h"
 #include "D.h"
+#include "E.h"
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
@@ -13,22 +14,31 @@
 #include "Debug.h"
 
 
-bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages) {
+bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages) 
+{
+   M * mreg = (M *) pregs[MREG];
+   W * wreg = (W *) pregs[WREG];
 
-    M * Mreg = (M *) pregs[MREG];
-    W * Wreg = (W *) pregs[WREG];
+   //grabs values from previous stage for current stage
 
-    uint64_t valM = RNONE;
-    setMinput(wreg, stat, icode, valE, valM, dstE, dstM);
-    return false;
+   uint64_t stat = mreg->getstat()->getOutput();
+   uint64_t icode = mreg->geticode()->getOutput();
+   uint64_t Cnd = mreg -> getCnd()->getOutput();   //will calculate later, holds 0 currently
+   uint64_t valE = mreg ->getvalE()->getOutput();  //will calculate later, holds 0 currently
+   uint64_t valA = mreg ->getvalA()->getOutput();
+   uint64_t dstE = mreg ->getdstE()->getOutput();
+   uint64_t dstM = mreg->getdstM()->getOutput();   //will calculate later, holds RNONE currently
+
+   uint64_t valM = mreg->getvalA()->getOutput() & 0; // will calculate later using valA. Currently holds 0
+
+   //sets inputs for next stage
+   setWinput(wreg, stat, icode, valE, valM, dstE, dstM);
+   return false;
 }
 
 void MemoryStage::doClockHigh(PipeReg **pregs)
 {
-
-   M * mreg = (M *) pregs[MREG];
-
-   mreg->getpredPC()->normal();
+   W * wreg = (W *) pregs[WREG];
    wreg->getstat()->normal();
    wreg->geticode()->normal();
    wreg->getvalE()->normal();
@@ -37,7 +47,8 @@ void MemoryStage::doClockHigh(PipeReg **pregs)
    wreg->getdstM()->normal();
 }
 
-void MemoryStage::setMinput(W * wreg, uint64_t stat, uint64_t icode,
+// initailizes values for next stage
+void MemoryStage::setWinput(W * wreg, uint64_t stat, uint64_t icode,
                            uint64_t valE, uint64_t valM, uint64_t dstE, uint64_t dstM)
 {
    wreg->getstat()->setInput(stat);

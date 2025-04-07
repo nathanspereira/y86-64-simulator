@@ -18,24 +18,39 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     
     D * dreg = (D *) pregs[DREG];
     E * ereg = (E *) pregs[EREG];
+
+    // Grabs initialized values from previous stage's setInput method.
+    // Everything here is used in Decode stage, grabbed from previous stage.
+
+    uint64_t stat = dreg->getstat()->getOutput();
+    uint64_t icode = dreg->geticode()->getOutput();
+    uint64_t ifun = dreg->getifun()->getOutput();
+    uint64_t rA = dreg->getrA()->getOutput();
+    uint64_t rB = dreg->getrB()->getOutput();
+    uint64_t valC = dreg->getvalC()->getOutput();
+    uint64_t valP = dreg->getvalP()->getOutput();
     
-    uint64_t valA = 0, valB = 0;
-    uint64_t dstE = RNONE, dstM = RNONE, srcA = SAOK, srcB = SAOK;
-    setEinput(ereg, dreg->getStat()->getOutput(), dreg->geticode()->getOutput(), dreg->getIfun()->getOutput(), valC, valA, valB, dstE, dstM, srcA, srcB);
+    // values that are used in next stage that we will calculate later
+
+    uint64_t valA = 0;
+    uint64_t valB = 0;
+    uint64_t dstE = RNONE;
+    uint64_t dstM = RNONE;
+    uint64_t srcA = SAOK;
+    uint64_t srcB = SAOK;
+
+    // initialize inputs for next stage, based on what next stage needs
+    setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
     return false;
 }
 
 void DecodeStage::doClockHigh(PipeReg **pregs) 
 {
-   
    E * ereg = (E *) pregs[EREG];
 
-   dreg->getpredPC()->normal();
    ereg->getstat()->normal();
    ereg->geticode()->normal();
    ereg->getifun()->normal();
-   //ereg->getrA()->normal();
-   //ereg->getrB()->normal();
    ereg->getvalC()->normal();
 }
 
