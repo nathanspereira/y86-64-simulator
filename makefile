@@ -50,7 +50,7 @@ W.o: W.h PipeReg.h PipeRegField.h
 
 
 clean:
-	rm $(OBJ) yess
+	rm -f $(OBJ) yess
 
 run:
 	make clean

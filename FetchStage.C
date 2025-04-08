@@ -12,6 +12,8 @@
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "Tools.h"
+#include "Memory.h"
 
 
 /*
@@ -25,24 +27,44 @@
  */
 bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
+   // initializes pointers to each stages registers. 
+
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
-   uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
+
+   // initializes reg values to 0 or none
+   uint64_t f_pc = 0, icode = INOP, ifun = 0, valC = 0 , valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
    //code missing here to select the value of the PC
    //and fetch the instruction from memory
+
+   f_pc = selectPC(freg, mreg, wreg); // doClockLow method needs to call selectPC to obtain the value of f_pc
+   
+   // The needRegIds and needValC methods need to be called because 
+   // the results of these are input to a method that you'll need to write called PCincrement
+   bool need_valC = needValC(icode);
+   bool needRegId = needRegIds(icode);
+   bool error = false;
+   uint64_t mem = Memory::getInstance() -> getByte(f_pc, error);
+   icode = Tools::getBits(mem, 4, 7);
+   ifun = Tools::getBits(mem, 0, 3);
+
    //Fetching the instruction will allow the icode, ifun,
    //rA, rB, and valC to be set.
    //The lab assignment describes what methods need to be
    //written.
    //The value passed to setInput below will need to be changed
-   freg->getpredPC()->setInput(selectPC(freg, mreg , wreg));
-   valP = PCincrement(f_pc, needValC(icode), needRegIds(icode));
-   uint64_t F_predPC = predictPC(icode, valP, valC);
 
+   freg->getpredPC()->setInput(f_pc + 1);
+
+   // The value returned by PCincrement is stored in valP
+   valP = PCincrement(f_pc, needRegId, need_valC);
+
+   uint64_t F_predPC = predictPC(icode, valC, valP);
+   freg -> getpredPC() -> setInput(F_predPC);
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
@@ -100,21 +122,21 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
 uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
 {
    uint64_t f_pc = 0;
-   if (mreg->geticode()->getOutput() != mreg->getCnd()->getOutput()) // M_icode == IJXX && !M_Cnd : M_valA;
+   if (mreg->geticode()->getOutput() == IJXX && !(mreg->getCnd()->getOutput() )) // (M_icode == IJXX) && !(M_Cnd) : M_valA;
    {
-      f_pc = mreg->getvalA()->getOutput();
+      return mreg->getvalA()->getOutput();
    }
    else if (wreg->geticode()->getOutput() == IRET) // W_icode == IRET : W_valM;
    {
-      f_pc = wreg->getvalM()->getOutput();
+      return wreg->getvalM()->getOutput();
    }
    else
    {
-      f_pc = f_pc + 1; // 1: F_predPC;
+      return freg->getpredPC()->getOutput(); // 1: F_predPC;
    }
-   return f_pc;
    
 }
+
 
 bool FetchStage::needRegIds(uint64_t f_icode)
 {
@@ -122,35 +144,44 @@ bool FetchStage::needRegIds(uint64_t f_icode)
    || f_icode == IRMMOVQ || f_icode == IMRMOVQ);
 }
 
+
 bool FetchStage::needValC(uint64_t f_icode)
 {
    return (f_icode == IIRMOVQ || f_icode ==  IRMMOVQ || f_icode ==  IMRMOVQ || f_icode ==  IJXX || f_icode == ICALL);
 }
 
+//  inputs are f_icode, f_valC, f_valP
 uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
 {
    uint64_t f_predPC = 0;
-   if (f_icode == IJXX || f_icode == ICALL)
+   if (f_icode == IJXX || f_icode == ICALL) // f_icode in { IJXX, ICALL } : f_valC;
    {
       f_predPC = f_valC;
    }
    else
    {
-      f_predPC = f_valP;  //f_icode in { IJXX, ICALL } : f_valC
+      f_predPC = f_valP;  //  1: f_valP;
    }
    return f_predPC;
 }
 
-uint64_t FetchStage::PCincrement(uint64_t f_pc, bool regldsBool, bool valCbool)
+// takes as input the address of the current instruction (f_pc), the result of needRegIds, 
+// and the result of needValC and calculates the address of the next sequential instruction
+uint64_t FetchStage::PCincrement(uint64_t f_pc, bool firstBool, bool secondBool)
 {
    //calculates the next address and stores in valP
    // The value of valP is then used as input to predictPC along with the icode value and the value of valC (0 for now). 
    // The output of predictPC is the input to the F_predPC register.
-   if (regldsBool || valCbool)
+   if (firstBool)
    {
-      f_pc = f_pc++;
+      f_pc = f_pc + 1;
    }
-   return f_pc;
+   else if (secondBool)
+   {
+      f_pc += 8;
+   }
+   
+   return f_pc + 1;
 
 }
      

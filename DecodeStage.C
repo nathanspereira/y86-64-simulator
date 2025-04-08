@@ -37,8 +37,8 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     uint64_t valB = 0;
     uint64_t dstE = RNONE;
     uint64_t dstM = RNONE;
-    uint64_t srcA = SAOK;
-    uint64_t srcB = SAOK;
+    uint64_t srcA = RNONE;
+    uint64_t srcB = RNONE;
 
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
@@ -53,6 +53,13 @@ void DecodeStage::doClockHigh(PipeReg **pregs)
    ereg->geticode()->normal();
    ereg->getifun()->normal();
    ereg->getvalC()->normal();
+   ereg->getvalA()->normal();
+   ereg->getvalB()->normal();
+   ereg->getdstE()->normal();
+   ereg->getdstM()->normal();
+   ereg->getsrcA()->normal();
+   ereg->getsrcB()->normal();
+
 }
 
 void DecodeStage::setEinput(E * ereg, uint64_t stat, uint64_t icode, 
