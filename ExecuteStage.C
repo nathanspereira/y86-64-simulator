@@ -12,6 +12,7 @@
 #include "ExecuteStage.h"
 #include "Status.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    E * ereg = (E *) pregs[EREG];

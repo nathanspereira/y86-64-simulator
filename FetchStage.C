@@ -11,6 +11,7 @@
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 
 /*
@@ -26,6 +27,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
+   M * mreg = (M *) pregs[MREG];
+   W * wreg = (W *) pregs[WREG];
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
@@ -35,15 +38,18 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //rA, rB, and valC to be set.
    //The lab assignment describes what methods need to be
    //written.
-
    //The value passed to setInput below will need to be changed
-   freg->getpredPC()->setInput(f_pc + 1);
+   freg->getpredPC()->setInput(selectPC(freg, mreg , wreg));
+   valP = PCincrement(f_pc, needValC(icode), needRegIds(icode));
+   uint64_t F_predPC = predictPC(icode, valP, valC);
+
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
 }
 
+ 
 /* doClockHigh
  * applies the appropriate control signal to the F
  * and D register intances
@@ -89,5 +95,62 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
    dreg->getrB()->setInput(rB);
    dreg->getvalC()->setInput(valC);
    dreg->getvalP()->setInput(valP);
+}
+
+uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
+{
+   uint64_t f_pc = 0;
+   if (mreg->geticode()->getOutput() != mreg->getCnd()->getOutput()) // M_icode == IJXX && !M_Cnd : M_valA;
+   {
+      f_pc = mreg->getvalA()->getOutput();
+   }
+   else if (wreg->geticode()->getOutput() == IRET) // W_icode == IRET : W_valM;
+   {
+      f_pc = wreg->getvalM()->getOutput();
+   }
+   else
+   {
+      f_pc = f_pc + 1; // 1: F_predPC;
+   }
+   return f_pc;
+   
+}
+
+bool FetchStage::needRegIds(uint64_t f_icode)
+{
+   return (f_icode == IRRMOVQ || f_icode ==  IOPQ || f_icode ==  IPUSHQ || f_icode ==  IPOPQ || f_icode == IIRMOVQ
+   || f_icode == IRMMOVQ || f_icode == IMRMOVQ);
+}
+
+bool FetchStage::needValC(uint64_t f_icode)
+{
+   return (f_icode == IIRMOVQ || f_icode ==  IRMMOVQ || f_icode ==  IMRMOVQ || f_icode ==  IJXX || f_icode == ICALL);
+}
+
+uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
+{
+   uint64_t f_predPC = 0;
+   if (f_icode == IJXX || f_icode == ICALL)
+   {
+      f_predPC = f_valC;
+   }
+   else
+   {
+      f_predPC = f_valP;  //f_icode in { IJXX, ICALL } : f_valC
+   }
+   return f_predPC;
+}
+
+uint64_t FetchStage::PCincrement(uint64_t f_pc, bool regldsBool, bool valCbool)
+{
+   //calculates the next address and stores in valP
+   // The value of valP is then used as input to predictPC along with the icode value and the value of valC (0 for now). 
+   // The output of predictPC is the input to the F_predPC register.
+   if (regldsBool || valCbool)
+   {
+      f_pc = f_pc++;
+   }
+   return f_pc;
+
 }
      

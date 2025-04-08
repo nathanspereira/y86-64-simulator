@@ -12,6 +12,7 @@
 #include "DecodeStage.h"
 #include "Status.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 
 bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {

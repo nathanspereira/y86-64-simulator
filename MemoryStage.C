@@ -12,6 +12,7 @@
 #include "MemoryStage.h"
 #include "Status.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 
 bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages) 
