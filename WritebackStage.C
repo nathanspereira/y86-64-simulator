@@ -18,13 +18,16 @@ bool WritebackStage::doClockLow(PipeReg **pregs, Stage **stages)
 {
     W * wreg = (W *) pregs[WREG];
     uint64_t icode = wreg -> geticode()-> getOutput();
+    uint64_t valE = wreg->getvalE()->getOutput();
+    uint64_t dstE = wreg->getdstE()->getOutput();
+    //uint64_t valM =;
     return icode == IHALT;
 }
 
 
 void WritebackStage::doClockHigh(PipeReg **pregs)
 {
-
+    RegisterFile::writeRegister(R[dstE], valE, false);
 }
 
 

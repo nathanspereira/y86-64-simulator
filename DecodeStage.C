@@ -40,6 +40,14 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     uint64_t srcA = RNONE;
     uint64_t srcB = RNONE;
 
+    buildSrcA();
+    buildSrcB();
+    buildDstE();
+    buildDstM();
+    buildValA();
+    buildValB();
+    RegisterFile::readRegister(dreg, false);
+
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
     return false;
