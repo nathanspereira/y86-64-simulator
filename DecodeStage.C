@@ -51,7 +51,8 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     
     RegisterFile * reg = RegisterFile::getInstance();
     
-    RegisterFile::readRegister(reg,  alwaysFalse);
+    valA = reg -> RegisterFile::readRegister(srcA,  alwaysFalse);
+    valB = reg->RegisterFile::readRegister(srcB,  alwaysFalse);
 
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
