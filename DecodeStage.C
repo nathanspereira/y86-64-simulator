@@ -45,13 +45,13 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     srcB = buildSrcB(icode, rB);
     dstE = buildDstE(icode, rB);
     dstM = buildDstM(icode, rA);
-    valA = buildValA(valA);
-    valB = buildValB(valB);
+    valA = buildValA(valA, srcA);
+    valB = buildValB(valB, srcB);
     bool alwaysFalse = false;
     
     RegisterFile * reg = RegisterFile::getInstance();
     
-    valA = reg -> RegisterFile::readRegister(srcA,  alwaysFalse);
+    valA = reg-> RegisterFile::readRegister(srcA,  alwaysFalse);
     valB = reg->RegisterFile::readRegister(srcB,  alwaysFalse);
 
     // initialize inputs for next stage, based on what next stage needs
@@ -174,12 +174,16 @@ uint64_t buildDstM(uint64_t D_icode, uint64_t rA)
    return dstM;
 }
 
-uint64_t buildValA(uint64_t valA)
+uint64_t buildValA(uint64_t valA, uint64_t srcA)
 {
-   return valA;
+   RegisterFile * reg = RegisterFile::getInstance();
+   bool alwaysFalse = false;
+   return reg -> RegisterFile::readRegister(srcA,  alwaysFalse);
 }
 
-uint64_t buildValB(uint64_t valB)
+uint64_t buildValB(uint64_t valB, uint64_t srcB)
 {
-   return valB;
+   RegisterFile * reg = RegisterFile::getInstance();
+   bool alwaysFalse = false;
+   return reg->RegisterFile::readRegister(srcB,  alwaysFalse);
 }

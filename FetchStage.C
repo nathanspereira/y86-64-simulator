@@ -171,7 +171,6 @@ uint64_t FetchStage::buildValC(uint64_t icode, uint64_t mem)
    
    if (needValC(icode))
    {
-   
       uint64_t temp = Tools::getByte(mem, 2) << 7 * 8;
       temp += Tools::getByte(mem, 3) << 6 * 8;
       temp += Tools::getByte(mem, 4) << 5 * 8;
