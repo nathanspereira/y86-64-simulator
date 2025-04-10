@@ -66,6 +66,11 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    uint64_t F_predPC = predictPC(icode, valC, valP);
    freg -> getpredPC() -> setInput(F_predPC);
 
+   valC = buildValC(icode, mem);
+   getRegIds(icode, mem, rA, rB);
+
+
+
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
@@ -144,9 +149,9 @@ bool FetchStage::needRegIds(uint64_t f_icode)
    || f_icode == IRMMOVQ || f_icode == IMRMOVQ);
 }
 
-void FetchStage::getRegIds()
+void FetchStage::getRegIds(uint64_t icode, uint64_t mem, uint64_t & rA, uint64_t & rB)
 {
-   if needRegIds(f_icode)
+   if (needRegIds(icode))
    {
       rA = Tools::getBits(mem, 8, 11);
       rB = Tools::getBits(mem, 12, 15);
@@ -161,13 +166,13 @@ bool FetchStage::needValC(uint64_t f_icode)
 //  if need_valC is true, this method reads 8 bytes from memory 
 // and builds and returns the valC that is then used as input to the D registe
 // FIX THIS LATER W A LOOOP
-uint64_t FetchStage::buildValC()
+uint64_t FetchStage::buildValC(uint64_t icode, uint64_t mem)
 {
    
-   if (needValC(f_icode))
+   if (needValC(icode))
    {
    
-      uint64_t temp += Tools::getByte(mem, 2) << 7 * 8;
+      uint64_t temp = Tools::getByte(mem, 2) << 7 * 8;
       temp += Tools::getByte(mem, 3) << 6 * 8;
       temp += Tools::getByte(mem, 4) << 5 * 8;
       temp += Tools::getByte(mem, 5) << 4 * 8;
@@ -175,10 +180,8 @@ uint64_t FetchStage::buildValC()
       temp += Tools::getByte(mem, 7) << 2 * 8;
       temp += Tools::getByte(mem, 8) << 1 * 8;
       temp += Tools::getByte(mem, 9);
-      valC = temp;
+      return temp;
    }
-
-   return valC;
 }
 
 //  inputs are f_icode, f_valC, f_valP

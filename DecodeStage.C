@@ -40,13 +40,18 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     uint64_t srcA = RNONE;
     uint64_t srcB = RNONE;
 
-    buildSrcA();
-    buildSrcB();
-    buildDstE();
-    buildDstM();
-    buildValA();
-    buildValB();
-    RegisterFile::readRegister(dreg, false);
+
+    srcA = buildSrcA(icode, rA);
+    srcB = buildSrcB(icode, rB);
+    dstE = buildDstE(icode, rB);
+    dstM = buildDstM(icode, rA);
+    valA = buildValA(valA);
+    valB = buildValB(valB);
+    bool alwaysFalse = false;
+    
+    RegisterFile * reg = RegisterFile::getInstance();
+    
+    RegisterFile::readRegister(reg,  alwaysFalse);
 
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
@@ -88,11 +93,12 @@ void DecodeStage::setEinput(E * ereg, uint64_t stat, uint64_t icode,
 
 //D_icode in { IRRMOVQ, IRMMOVQ, IOPQ, IPUSHQ } : D_rA;
 // D_icode in { IPOPQ, IRET } : RSP;
-void buildSrcA()
+uint64_t buildSrcA(uint64_t D_icode, uint64_t rA)
 {
+   uint64_t srcA;
    if (D_icode == IRRMOVQ || D_icode == IRMMOVQ || D_icode ==  IOPQ || D_icode == IPUSHQ)
    {
-       srcA = D_rA;
+      srcA = rA;
    } 
    else if (D_icode == IPOPQ || D_icode == IRET)
    {
@@ -102,17 +108,19 @@ void buildSrcA()
    {
        srcA = RNONE;
    }
+   return srcA;
 }
 // D_icode in { IOPQ, IRMMOVQ, IMRMOVQ } : D_rB;
 
 //D_icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RSP;
 
 //1: RNONE;   //no register needed
-void buildSrcB()
+uint64_t buildSrcB(uint64_t D_icode, uint64_t rB)
 {
+   uint64_t srcB;
    if (D_icode == IOPQ || D_icode == IRRMOVQ || D_icode == IMRMOVQ)
    {
-      srcB = D_rB;
+      srcB = rB;
    }
    else if (D_icode == IPUSHQ || D_icode == IPOPQ || D_icode == ICALL || D_icode == IRET)
    {
@@ -130,11 +138,12 @@ void buildSrcB()
 //D_icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RSP;
 
 //1: RNONE;
-void buildDstE()
+uint64_t buildDstE(uint64_t D_icode, uint64_t rB)
 {
+   uint64_t dstE;
    if (D_icode == IRRMOVQ || D_icode == IIRMOVQ || D_icode == IOPQ)
    {
-      dstE = D_rB;
+      dstE = rB;
    }
    else if (D_icode == IPUSHQ || D_icode == IPOPQ || D_icode == ICALL || D_icode == IRET)
    {
@@ -144,29 +153,32 @@ void buildDstE()
    {
       dstE = RNONE;
    }
+   return dstE;
 }
 
 //D_icode in { IMRMOVQ, IPOPQ } : D_rA;
 
 // 1: RNONE;
-void buildDstM()
+uint64_t buildDstM(uint64_t D_icode, uint64_t rA)
 {
+   uint64_t dstM;
    if (D_icode == IRRMOVQ || D_icode == IPOPQ)
    {
-      dstM = D_rA;
+      dstM = rA;
    }
    else 
    {
       dstM = RNONE;
    }
+   return dstM;
 }
 
-void buildValA()
+uint64_t buildValA(uint64_t valA)
 {
-   valA = d_rvalA;
+   return valA;
 }
 
-void buildValB()
+uint64_t buildValB(uint64_t valB)
 {
-   valB = d_rvalB;
+   return valB;
 }
