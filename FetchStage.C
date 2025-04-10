@@ -144,10 +144,41 @@ bool FetchStage::needRegIds(uint64_t f_icode)
    || f_icode == IRMMOVQ || f_icode == IMRMOVQ);
 }
 
+void FetchStage::getRegIds()
+{
+   if needRegIds(f_icode)
+   {
+      rA = Tools::getBits(mem, 8, 11);
+      rB = Tools::getBits(mem, 12, 15);
+   }
+}
 
 bool FetchStage::needValC(uint64_t f_icode)
 {
    return (f_icode == IIRMOVQ || f_icode ==  IRMMOVQ || f_icode ==  IMRMOVQ || f_icode ==  IJXX || f_icode == ICALL);
+}
+
+//  if need_valC is true, this method reads 8 bytes from memory 
+// and builds and returns the valC that is then used as input to the D registe
+// FIX THIS LATER W A LOOOP
+uint64_t FetchStage::buildValC()
+{
+   
+   if (needValC(f_icode))
+   {
+   
+      uint64_t temp += Tools::getByte(mem, 2) << 7 * 8;
+      temp += Tools::getByte(mem, 3) << 6 * 8;
+      temp += Tools::getByte(mem, 4) << 5 * 8;
+      temp += Tools::getByte(mem, 5) << 4 * 8;
+      temp += Tools::getByte(mem, 6) << 3 * 8;
+      temp += Tools::getByte(mem, 7) << 2 * 8;
+      temp += Tools::getByte(mem, 8) << 1 * 8;
+      temp += Tools::getByte(mem, 9);
+      valC = temp;
+   }
+
+   return valC;
 }
 
 //  inputs are f_icode, f_valC, f_valP
