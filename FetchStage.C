@@ -167,16 +167,16 @@ uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_val
 
 // takes as input the address of the current instruction (f_pc), the result of needRegIds, 
 // and the result of needValC and calculates the address of the next sequential instruction
-uint64_t FetchStage::PCincrement(uint64_t f_pc, bool firstBool, bool secondBool)
+uint64_t FetchStage::PCincrement(uint64_t f_pc, bool needRegBool, bool need_valC_bool)
 {
    //calculates the next address and stores in valP
    // The value of valP is then used as input to predictPC along with the icode value and the value of valC (0 for now). 
    // The output of predictPC is the input to the F_predPC register.
-   if (firstBool)
+   if (needRegBool)
    {
       f_pc = f_pc + 1;
    }
-   else if (secondBool)
+   else if (need_valC_bool)
    {
       f_pc += 8;
    }
