@@ -15,7 +15,6 @@
 #include "Tools.h"
 #include "Memory.h"
 
-
 /*
  * doClockLow:
  * Performs the Fetch stage combinational logic that is performed when
@@ -45,12 +44,14 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    
    // The needRegIds and needValC methods need to be called because 
    // the results of these are input to a method that you'll need to write called PCincrement
-   bool need_valC = needValC(icode);
-   bool needRegId = needRegIds(icode);
    bool error = false;
    uint64_t mem = Memory::getInstance() -> getByte(f_pc, error);
    icode = Tools::getBits(mem, 4, 7);
    ifun = Tools::getBits(mem, 0, 3);
+   bool need_valC = needValC(icode);
+   bool needRegId = needRegIds(icode);
+
+
 
    //Fetching the instruction will allow the icode, ifun,
    //rA, rB, and valC to be set.
@@ -177,7 +178,7 @@ uint64_t FetchStage::buildValC(uint64_t f_pc, bool needRegBool, bool need_valC)
 
       if (needRegBool)
       {
-         f_pc + 1;
+         f_pc = f_pc + 1;
       }
       
       if (need_valC)
@@ -191,7 +192,6 @@ uint64_t FetchStage::buildValC(uint64_t f_pc, bool needRegBool, bool need_valC)
          
       }
       return valC;
-      
    }
 }
 
