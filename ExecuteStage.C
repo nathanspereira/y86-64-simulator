@@ -13,6 +13,8 @@
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "ConditionCodes.h"
+#include "Tools.h"
 
 bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    E * ereg = (E *) pregs[EREG];
@@ -68,3 +70,98 @@ void ExecuteStage::setMinput(M * mreg, uint64_t stat, uint64_t icode,
    mreg->getdstM()->setInput(dstM);
 }
 
+uint64_t ExecuteStage::getAluA(uint64_t E_icode, uint64_t E_valA, uint64_t E_valC)
+{
+   if (E_icode == IRRMOVQ || E_icode == IOPQ) return E_valA;
+   else if (E_icode == IIRMOVQ || E_icode == IRMMOVQ || E_icode == IMRMOVQ) return E_valC;
+   else if (E_icode == ICALL || E_icode == IPUSHQ) return  -8;
+   else if (E_icode == IRET || E_icode == IPOPQ) return  8;
+   else return 0;
+}
+
+
+uint64_t ExecuteStage::getAluB(uint64_t E_icode, uint64_t E_valB, uint64_t)
+{ 
+   if (E_icode == IRMMOVQ || E_icode == IMRMOVQ || E_icode == IOPQ || E_icode == ICALL 
+                          || E_icode == IPUSHQ || E_icode == IRET || E_icode == IPOPQ) 
+      return E_valB;
+
+
+   else if (E_icode == IRRMOVQ || E_icode == IIRMOVQ) return  0;
+   else return 0;
+}
+
+uint64_t ExecuteStage::getAluFun(uint64_t E_icode, uint64_t E_ifun)
+{
+   if (E_icode == IOPQ) return E_ifun;
+   else return ADDQ;
+}
+
+bool ExecuteStage::setCC(uint64_t E_icode)
+{
+   return E_icode == IOPQ;
+}
+
+uint64_t ExecuteStage::getDstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t E_dstE)
+{
+   if ((E_icode == IRRMOVQ) && (E_icode != e_Cnd)) return RNONE;
+   else return E_dstE;
+}  
+
+// If the set_cc component returns true then the CC component will be used to set the condition codes 
+// (in the ConditionCodes class) to 0 or 1.  
+void ExecuteStage::ccLogicCircuit(uint64_t E_icode, uint64_t aluA, uint64_t aluB,  uint64_t aluFun)
+{
+   ConditionCodes * codes = ConditionCodes::getInstance();
+
+   if (setCC(E_icode))
+   {
+      bool falsy = false; // needed for setConditionCodes
+      uint32_t ccNum = 0;
+
+      if (Tools::addOverflow(aluA, aluB) && aluFun == ADDQ 
+            || Tools::subOverflow(aluA, aluB) && aluFun == SUBQ)
+      {
+         ccNum = OF;
+         codes->ConditionCodes::setConditionCode(setCC(E_icode), ccNum,  falsy);
+      }  
+   
+      if ((aluA == aluB) && (aluFun == SUBQ) || (aluA + aluB == 0))
+      {
+         ccNum = ZF;
+         codes -> ConditionCodes::setConditionCode(setCC(E_icode), ccNum,  falsy);
+      }
+
+      if ((aluA == aluB && aluFun == XORQ) || (aluA < 0 && aluB < 0 && aluFun == ADDQ )) 
+      {
+         ccNum = SF;
+         codes -> ConditionCodes::setConditionCode(setCC(E_icode), ccNum,  falsy);
+      }
+
+   }
+}
+
+// The ALU will be used to perform add, sub, xor, or and depending upon the value returned from the ALU fun. control unit.
+//   See the ExecuteStage diagram to see how all of these fit together.
+// Multiplexer, + - ^ &
+uint64_t aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
+{
+   if (aluFun == ADDQ)
+   {
+      return aluB + aluA;
+   }
+   else if (aluFun == SUBQ)
+   {
+      return aluB - aluA;
+   }
+   else if (aluFun == XORQ)
+   {
+      return aluB ^ aluA;
+   }
+   else if (aluFun == ANDQ)
+   {
+      return aluB & aluA;
+   }
+
+   else return 999;
+}

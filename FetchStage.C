@@ -14,6 +14,8 @@
 #include "Instructions.h"
 #include "Tools.h"
 #include "Memory.h"
+#include <iomanip>
+#include <iostream>
 
 
 /*
@@ -68,6 +70,10 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
+
+   //print icode in hex
+   //if (debug) std::cout << std::hex << icode << std::endl; 
+
    return false;
 }
 

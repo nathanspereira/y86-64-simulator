@@ -78,3 +78,13 @@ void DecodeStage::setEinput(E * ereg, uint64_t stat, uint64_t icode,
    ereg->getsrcB()->setInput(srcB);
 }
 
+//tell this method how to grab variabels from other classes
+uint64_t getValA(uint64_t d_icode, uint64_t d_srcA, uint64_t M_dstE, uint64_t e_valE)
+{
+   if (d_srcA == dstE) return e_valE;
+   else if (d_srcA == M_dstE) return M_valA;
+   else if (d_srcA == W_dstE) return W_valE;
+   else return d_rvalA;
+}
+
+uint64_t getValB(uint64_t d_icode, )
