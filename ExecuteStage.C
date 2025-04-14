@@ -36,7 +36,7 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
 
    //needed for next register, will calculate later
    uint64_t Cnd = 0; 
-   uint64_t valE = 0;
+   uint64_t valE = valC;
 
 
    setMinput(mreg, stat, icode, Cnd, valE, valA, dstE, dstM);

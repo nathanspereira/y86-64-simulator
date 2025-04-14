@@ -40,6 +40,20 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) {
     uint64_t srcA = RNONE;
     uint64_t srcB = RNONE;
 
+
+    srcA = buildSrcA(icode, rA);
+    srcB = buildSrcB(icode, rB);
+    dstE = buildDstE(icode, rB);
+    dstM = buildDstM(icode, rA);
+    valA = buildValA(valA, srcA);
+    valB = buildValB(valB, srcB);
+    bool alwaysFalse = false;
+    
+    RegisterFile * reg = RegisterFile::getInstance();
+    
+    valA = reg-> RegisterFile::readRegister(srcA,  alwaysFalse);
+    valB = reg->RegisterFile::readRegister(srcB,  alwaysFalse);
+
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
     return false;
@@ -78,3 +92,98 @@ void DecodeStage::setEinput(E * ereg, uint64_t stat, uint64_t icode,
    ereg->getsrcB()->setInput(srcB);
 }
 
+//D_icode in { IRRMOVQ, IRMMOVQ, IOPQ, IPUSHQ } : D_rA;
+// D_icode in { IPOPQ, IRET } : RSP;
+uint64_t DecodeStage::buildSrcA(uint64_t D_icode, uint64_t rA)
+{
+   uint64_t srcA;
+   if (D_icode == IRRMOVQ || D_icode == IRMMOVQ || D_icode ==  IOPQ || D_icode == IPUSHQ)
+   {
+      srcA = rA;
+   } 
+   else if (D_icode == IPOPQ || D_icode == IRET)
+   {
+       srcA = RSP;
+   }
+   else
+   {
+       srcA = RNONE;
+   }
+   return srcA;
+}
+// D_icode in { IOPQ, IRMMOVQ, IMRMOVQ } : D_rB;
+
+//D_icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RSP;
+
+//1: RNONE;   //no register needed
+uint64_t DecodeStage::buildSrcB(uint64_t D_icode, uint64_t rB)
+{
+   uint64_t srcB;
+   if (D_icode == IOPQ || D_icode == IRRMOVQ || D_icode == IMRMOVQ)
+   {
+      srcB = rB;
+   }
+   else if (D_icode == IPUSHQ || D_icode == IPOPQ || D_icode == ICALL || D_icode == IRET)
+   {
+      srcB = RSP;
+   }
+   else 
+   {
+      srcB = RNONE;
+   }
+   return srcB;
+}
+
+// D_icode in { IRRMOVQ, IIRMOVQ, IOPQ} : D_rB;
+
+//D_icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RSP;
+
+//1: RNONE;
+uint64_t DecodeStage::buildDstE(uint64_t D_icode, uint64_t rB)
+{
+   uint64_t dstE;
+   if (D_icode == IRRMOVQ || D_icode == IIRMOVQ || D_icode == IOPQ)
+   {
+      dstE = rB;
+   }
+   else if (D_icode == IPUSHQ || D_icode == IPOPQ || D_icode == ICALL || D_icode == IRET)
+   {
+      dstE = RSP;
+   }
+   else 
+   {
+      dstE = RNONE;
+   }
+   return dstE;
+}
+
+//D_icode in { IMRMOVQ, IPOPQ } : D_rA;
+
+// 1: RNONE;
+uint64_t DecodeStage::buildDstM(uint64_t D_icode, uint64_t rA)
+{
+   uint64_t dstM;
+   if (D_icode == IRRMOVQ || D_icode == IPOPQ)
+   {
+      dstM = rA;
+   }
+   else 
+   {
+      dstM = RNONE;
+   }
+   return dstM;
+}
+
+uint64_t DecodeStage::buildValA(uint64_t valA, uint64_t srcA)
+{
+   RegisterFile * reg = RegisterFile::getInstance();
+   bool alwaysFalse = false;
+   return reg -> RegisterFile::readRegister(srcA,  alwaysFalse);
+}
+
+uint64_t DecodeStage::buildValB(uint64_t valB, uint64_t srcB)
+{
+   RegisterFile * reg = RegisterFile::getInstance();
+   bool alwaysFalse = false;
+   return reg->RegisterFile::readRegister(srcB,  alwaysFalse);
+}
