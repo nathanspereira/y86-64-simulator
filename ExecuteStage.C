@@ -16,6 +16,8 @@
 #include "ConditionCodes.h"
 #include "Tools.h"
 
+
+
 bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    E * ereg = (E *) pregs[EREG];
    M * mreg = (M *) pregs[MREG];
@@ -30,18 +32,22 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    uint64_t valB = ereg->getvalB()->getOutput(); // currently set to 0)
 
    
-   uint64_t dstE = ereg-> getdstE() -> getOutput(); // currently set to RNONE
+   E_dstE = ereg-> getdstE() -> getOutput(); // currently set to RNONE
+
+
    uint64_t dstM = ereg->getdstM()->getOutput();   // currently set to RNONE
    uint64_t srcA = ereg->getsrcA()->getOutput();   // currently set to SAOK
    uint64_t srcB = ereg->getsrcB()->getOutput();   // currently set to SAOK
    
 
-   //needed for next register, will calculate later
+   // USE ALU METHOD TO CALCULATE VALE, INPUTS ARE ALUA, ALUB, 
+   uint64_t valE = aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
+   
    uint64_t Cnd = 0; 
-   uint64_t valE = 0;
 
 
-   setMinput(mreg, stat, icode, Cnd, valE, valA, dstE, dstM);
+
+   setMinput(mreg, stat, icode, Cnd, valE, valA, E_dstE, dstM);
    return false;
 }
 
@@ -164,4 +170,15 @@ uint64_t aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
    }
 
    else return 999;
+}
+
+uint64_t getE_dstE()
+{
+   return E_dstE;
+}
+
+uint64_t getE_valE()
+{
+   return E_valE;
+
 }
