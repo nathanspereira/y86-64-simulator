@@ -27,23 +27,26 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    uint64_t icode = ereg->geticode()->getOutput();
    uint64_t ifun = ereg->getifun()->getOutput();
    uint64_t valC = ereg->getvalC()->getOutput();
-
    uint64_t valA = ereg->getvalA()->getOutput(); // currently set to 0
    uint64_t valB = ereg->getvalB()->getOutput(); // currently set to 0)
-
-   
-   E_dstE = ereg-> getdstE() -> getOutput(); // currently set to RNONE
-
-
+   uint64_t dstE = ereg->getdstE()->getOutput();
    uint64_t dstM = ereg->getdstM()->getOutput();   // currently set to RNONE
    uint64_t srcA = ereg->getsrcA()->getOutput();   // currently set to SAOK
-   uint64_t srcB = ereg->getsrcB()->getOutput();   // currently set to SAOK
+   uint64_t srcB = ereg->getsrcB()->getOutput(); 
+
+   uint64_t Cnd = 0;
+   E_dstE = getE_dstE(icode, Cnd, dstE); // currently set to RNONE
+   
    
 
    // USE ALU METHOD TO CALCULATE VALE, INPUTS ARE ALUA, ALUB, 
-   uint64_t valE = aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
+
+   uint64_t aluA = getAluA(icode, valA, valC);
+   uint64_t aluB = getAluB(icode, valB);
+   uint64_t aluFun = getAluFun(icode, ifun); 
+   uint64_t valE = aluLogicCircuit(aluA, aluB, aluFun);
    
-   uint64_t Cnd = 0; 
+   bool ccChanged = setCC(icode);
 
 
 
@@ -86,12 +89,11 @@ uint64_t ExecuteStage::getAluA(uint64_t E_icode, uint64_t E_valA, uint64_t E_val
 }
 
 
-uint64_t ExecuteStage::getAluB(uint64_t E_icode, uint64_t E_valB, uint64_t)
+uint64_t ExecuteStage::getAluB(uint64_t E_icode, uint64_t E_valB)
 { 
    if (E_icode == IRMMOVQ || E_icode == IMRMOVQ || E_icode == IOPQ || E_icode == ICALL 
                           || E_icode == IPUSHQ || E_icode == IRET || E_icode == IPOPQ) 
       return E_valB;
-
 
    else if (E_icode == IRRMOVQ || E_icode == IIRMOVQ) return  0;
    else return 0;
@@ -108,7 +110,8 @@ bool ExecuteStage::setCC(uint64_t E_icode)
    return E_icode == IOPQ;
 }
 
-uint64_t ExecuteStage::getDstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t E_dstE)
+////HCL turned into C++ for dstE component
+uint64_t ExecuteStage::getdstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t E_dstE)
 {
    if ((E_icode == IRRMOVQ) && (E_icode != e_Cnd)) return RNONE;
    else return E_dstE;
@@ -116,35 +119,23 @@ uint64_t ExecuteStage::getDstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t E_dstE
 
 // If the set_cc component returns true then the CC component will be used to set the condition codes 
 // (in the ConditionCodes class) to 0 or 1.  
-void ExecuteStage::ccLogicCircuit(uint64_t E_icode, uint64_t aluA, uint64_t aluB,  uint64_t aluFun)
+void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB,  uint64_t aluFun, uint64_t E_valE, bool falsy)
 {
    ConditionCodes * codes = ConditionCodes::getInstance();
-
-   if (setCC(E_icode))
-   {
-      bool falsy = false; // needed for setConditionCodes
-      uint32_t ccNum = 0;
-
-      if (Tools::addOverflow(aluA, aluB) && aluFun == ADDQ 
-            || Tools::subOverflow(aluA, aluB) && aluFun == SUBQ)
-      {
-         ccNum = OF;
-         codes->ConditionCodes::setConditionCode(setCC(E_icode), ccNum,  falsy);
-      }  
    
-      if ((aluA == aluB) && (aluFun == SUBQ) || (aluA + aluB == 0))
-      {
-         ccNum = ZF;
-         codes -> ConditionCodes::setConditionCode(setCC(E_icode), ccNum,  falsy);
-      }
+   if (ccChanged)
+   {
+      bool overflow = (Tools::addOverflow(aluA, aluB) && aluFun == ADDQ )|| (Tools::subOverflow(aluA, aluB) && aluFun == SUBQ);
+      codes->ConditionCodes::setConditionCode(overflow, OF, falsy); 
 
-      if ((aluA == aluB && aluFun == XORQ) || (aluA < 0 && aluB < 0 && aluFun == ADDQ )) 
-      {
-         ccNum = SF;
-         codes -> ConditionCodes::setConditionCode(setCC(E_icode), ccNum,  falsy);
-      }
+      bool sign = Tools::sign(E_valE);
+      codes->ConditionCodes::setConditionCode(sign, SF , falsy);
 
+      bool zerFlag = E_valE == 0;
+      codes->ConditionCodes::setConditionCode(zerFlag, ZF , falsy);
+      
    }
+
 }
 
 // The ALU will be used to perform add, sub, xor, or and depending upon the value returned from the ALU fun. control unit.
@@ -172,13 +163,17 @@ uint64_t aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
    else return 999;
 }
 
-uint64_t getE_dstE()
+uint64_t ExecuteStage::getE_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE)
 {
-   return E_dstE;
+
+   if ((E_icode == IRRMOVQ) && (!e_Cnd))
+   {
+      return RNONE;
+   }
+   return dstE;
 }
 
-uint64_t getE_valE()
+uint64_t ExecuteStage::getE_valE()
 {
    return E_valE;
-
 }

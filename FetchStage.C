@@ -53,6 +53,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    uint64_t mem = Memory::getInstance() -> getByte(f_pc, error);
    icode = Tools::getBits(mem, 4, 7);
    ifun = Tools::getBits(mem, 0, 3);
+   // rA = getrA();
+   // rB = getrB();
 
    //Fetching the instruction will allow the icode, ifun,
    //rA, rB, and valC to be set.
@@ -190,4 +192,24 @@ uint64_t FetchStage::PCincrement(uint64_t f_pc, bool needRegBool, bool need_valC
    return f_pc + 1;
 
 }
+
+// uint64_t FetchStage::getrA(mem)
+// {
+//    uint64_t rA = RNONE;
+//    if (needRegIDs)
+//    {
+//       rA = Tools::getBits(mem, 8, 11);
+//    }
+//    return rA;
+// }
+
+// uint64_t FetchStage::getrB(mem)
+// {
+//    uint64_t rB = RNONE;
+//    if (needRegIds)
+//    {
+//       rB = Tools::getBits(mem, 12, 15);
+//    }
+//    return rB;
+// }
      
