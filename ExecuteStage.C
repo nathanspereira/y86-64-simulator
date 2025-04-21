@@ -27,30 +27,29 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    uint64_t icode = ereg->geticode()->getOutput();
    uint64_t ifun = ereg->getifun()->getOutput();
    uint64_t valC = ereg->getvalC()->getOutput();
-   uint64_t valA = ereg->getvalA()->getOutput(); // currently set to 0
-   uint64_t valB = ereg->getvalB()->getOutput(); // currently set to 0)
+   uint64_t valA = ereg->getvalA()->getOutput(); 
+   uint64_t valB = ereg->getvalB()->getOutput(); 
    uint64_t dstE = ereg->getdstE()->getOutput();
-   uint64_t dstM = ereg->getdstM()->getOutput();   // currently set to RNONE
-   uint64_t srcA = ereg->getsrcA()->getOutput();   // currently set to SAOK
+   uint64_t dstM = ereg->getdstM()->getOutput();   
+   uint64_t srcA = ereg->getsrcA()->getOutput();   
    uint64_t srcB = ereg->getsrcB()->getOutput(); 
 
-   uint64_t Cnd = 0;
-   E_dstE = getE_dstE(icode, Cnd, dstE); // currently set to RNONE
-   
-   
+   uint64_t Cnd = 0; // why are we setting this to 0 ??
 
-   // USE ALU METHOD TO CALCULATE VALE, INPUTS ARE ALUA, ALUB, 
-
+   // alu related variables
    uint64_t aluA = getAluA(icode, valA, valC);
    uint64_t aluB = getAluB(icode, valB);
    uint64_t aluFun = getAluFun(icode, ifun); 
-   uint64_t valE = aluLogicCircuit(aluA, aluB, aluFun);
+    e_valE = aluLogicCircuit(aluA, aluB, aluFun);
+
+   bool ccChanged = set_cc(icode);
+   e_dstE = set_dstE(icode, Cnd, dstE);
+
    
-   bool ccChanged = setCC(icode);
+   bool falsy = false;
 
-
-
-   setMinput(mreg, stat, icode, Cnd, valE, valA, E_dstE, dstM);
+   ccLogicCircuit(ccChanged, aluA,  aluB,  aluFun, e_valE, falsy);
+   setMinput(mreg, stat, icode, Cnd, e_valE, valA, e_dstE, dstM);
    return false;
 }
 
@@ -79,6 +78,7 @@ void ExecuteStage::setMinput(M * mreg, uint64_t stat, uint64_t icode,
    mreg->getdstM()->setInput(dstM);
 }
 
+//From HCL
 uint64_t ExecuteStage::getAluA(uint64_t E_icode, uint64_t E_valA, uint64_t E_valC)
 {
    if (E_icode == IRRMOVQ || E_icode == IOPQ) return E_valA;
@@ -88,7 +88,7 @@ uint64_t ExecuteStage::getAluA(uint64_t E_icode, uint64_t E_valA, uint64_t E_val
    else return 0;
 }
 
-
+//From HCL
 uint64_t ExecuteStage::getAluB(uint64_t E_icode, uint64_t E_valB)
 { 
    if (E_icode == IRMMOVQ || E_icode == IMRMOVQ || E_icode == IOPQ || E_icode == ICALL 
@@ -99,26 +99,35 @@ uint64_t ExecuteStage::getAluB(uint64_t E_icode, uint64_t E_valB)
    else return 0;
 }
 
+//from HCL
 uint64_t ExecuteStage::getAluFun(uint64_t E_icode, uint64_t E_ifun)
 {
    if (E_icode == IOPQ) return E_ifun;
    else return ADDQ;
 }
 
-bool ExecuteStage::setCC(uint64_t E_icode)
+bool ExecuteStage::set_cc(uint64_t E_icode)
 {
    return E_icode == IOPQ;
 }
 
 ////HCL turned into C++ for dstE component
-uint64_t ExecuteStage::getdstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t E_dstE)
+uint64_t ExecuteStage::set_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE)
 {
-   if ((E_icode == IRRMOVQ) && (E_icode != e_Cnd)) return RNONE;
-   else return E_dstE;
+   if ((E_icode == IRRMOVQ) && (!e_Cnd)) 
+   {
+      return RNONE;
+   }
+   else
+   {
+      return dstE;
+   }
+ 
 }  
 
 // If the set_cc component returns true then the CC component will be used to set the condition codes 
-// (in the ConditionCodes class) to 0 or 1.  
+// (in the ConditionCodes class) to 0 or 1. 
+// Probably NOT where the problem is 
 void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB,  uint64_t aluFun, uint64_t E_valE, bool falsy)
 {
    ConditionCodes * codes = ConditionCodes::getInstance();
@@ -131,7 +140,7 @@ void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB, 
       bool sign = Tools::sign(E_valE);
       codes->ConditionCodes::setConditionCode(sign, SF , falsy);
 
-      bool zerFlag = E_valE == 0;
+      bool zerFlag = (E_valE == 0);
       codes->ConditionCodes::setConditionCode(zerFlag, ZF , falsy);
       
    }
@@ -141,7 +150,7 @@ void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB, 
 // The ALU will be used to perform add, sub, xor, or and depending upon the value returned from the ALU fun. control unit.
 //   See the ExecuteStage diagram to see how all of these fit together.
 // Multiplexer, + - ^ &
-uint64_t aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
+uint64_t ExecuteStage::aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
 {
    if (aluFun == ADDQ)
    {
@@ -160,20 +169,15 @@ uint64_t aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
       return aluB & aluA;
    }
 
-   else return 999;
+   else return -1;
 }
 
-uint64_t ExecuteStage::getE_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE)
+uint64_t ExecuteStage::gete_dstE()
 {
-
-   if ((E_icode == IRRMOVQ) && (!e_Cnd))
-   {
-      return RNONE;
-   }
-   return dstE;
+   return e_dstE;
 }
 
-uint64_t ExecuteStage::getE_valE()
+uint64_t ExecuteStage::gete_valE()
 {
-   return E_valE;
+   return e_valE;
 }
