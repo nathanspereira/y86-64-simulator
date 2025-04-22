@@ -48,7 +48,7 @@ bool ConditionCodes::getConditionCode(int32_t ccNum, bool & error)
 {
    //Use your getBits in Tools.C
    //Dont use "magic" numbers.
-	if(ccNum == 3 || ccNum == 6 || ccNum == 2 )
+	if(ccNum == OF || ccNum == SF || ccNum == ZF )
    {
    	error = false;
       return Tools::getBits(codes, ccNum, ccNum);
