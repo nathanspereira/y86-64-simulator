@@ -52,22 +52,6 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t valA = getD_valA(srcA, d_rvalA, mreg, wreg, prev_dstE, prev_valE);
    uint64_t valB = getD_valB(srcB, d_rvalB, mreg, wreg, prev_dstE, prev_valE);
 
-
-
-
-    srcA = buildSrcA(icode, rA);
-    srcB = buildSrcB(icode, rB);
-    dstE = buildDstE(icode, rB);
-    dstM = buildDstM(icode, rA);
-    valA = buildValA(valA);
-    valB = buildValB(valB);
-    bool alwaysFalse = false;
-    
-    RegisterFile * reg = RegisterFile::getInstance();
-    
-    valA = reg -> RegisterFile::readRegister(srcA,  alwaysFalse);
-    valB = reg->RegisterFile::readRegister(srcB,  alwaysFalse);
-
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
     return false;

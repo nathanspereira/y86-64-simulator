@@ -70,11 +70,6 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    uint64_t F_predPC = predictPC(icode, valC, valP);
    freg -> getpredPC() -> setInput(F_predPC);
 
-   valC = buildValC(icode, mem);
-   getRegIds(icode, mem, rA, rB);
-
-
-
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
