@@ -181,3 +181,16 @@ uint64_t ExecuteStage::gete_valE()
 {
    return e_valE;
 }
+
+//Lab 9
+bool ExecuteStage::cond(uint64_t E_icode, uint64_t E_ifun) {
+    bool e_Cnd = 0;
+    ConditionCodes *codes = ConditionCodes::getInstance();
+
+    if (icode != 7 && icode != 2) {
+        e_Cnd = 1; 
+    } else {
+
+    }
+}
+
