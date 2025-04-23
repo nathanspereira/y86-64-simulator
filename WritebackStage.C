@@ -34,5 +34,3 @@ void WritebackStage::doClockHigh(PipeReg **pregs)
     bool alwaysFalse = false; 
     reg->RegisterFile::writeRegister(valE, dstE, alwaysFalse);
 }
-
-

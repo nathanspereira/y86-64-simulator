@@ -167,6 +167,7 @@ bool FetchStage::needValC(uint64_t f_icode)
 //  if need_valC is true, this method reads 8 bytes from memory 
 // and builds and returns the valC that is then used as input to the D registe
 // FIX THIS LATER W A LOOOP
+
 uint64_t FetchStage::buildValC(uint64_t f_pc, bool needRegBool, bool need_valC)
 {
    if (need_valC)

@@ -1,0 +1,61 @@
+0x000: 30f00100000000000000 | irmovq $1, %rax       # 2^0 in %rax
+                            | 
+0x00a: 6001                 | addq %rax, %rcx       # %rcx = 2^1
+0x00c: 2001                 | rrmovq %rax, %rcx     # Copy 2^0 to %rcx
+0x00e: 6011                 | addq %rcx, %rcx       # %rcx = 2^1
+                            | 
+0x010: 6012                 | addq %rcx, %rdx       # %rdx = 2^2
+0x012: 2012                 | rrmovq %rcx, %rdx     # Copy 2^1 to %rdx
+0x014: 6022                 | addq %rdx, %rdx       # %rdx = 2^2
+                            | 
+0x016: 6023                 | addq %rdx, %rbx       # %rbx = 2^3
+0x018: 2023                 | rrmovq %rdx, %rbx     # Copy 2^2 to %rbx
+0x01a: 6033                 | addq %rbx, %rbx       # %rbx = 2^3
+                            | 
+0x01c: 6034                 | addq %rbx, %rsp       # %rsp = 2^4
+0x01e: 2034                 | rrmovq %rbx, %rsp     # Copy 2^3 to %rsp
+0x020: 6044                 | addq %rsp, %rsp       # %rsp = 2^4
+                            | 
+0x022: 6045                 | addq %rsp, %rbp       # %rbp = 2^5
+0x024: 2045                 | rrmovq %rsp, %rbp     # Copy 2^4 to %rbp
+0x026: 6055                 | addq %rbp, %rbp       # %rbp = 2^5
+                            | 
+0x028: 6056                 | addq %rbp, %rsi       # %rsi = 2^6
+0x02a: 2056                 | rrmovq %rbp, %rsi     # Copy 2^5 to %rsi
+0x02c: 6066                 | addq %rsi, %rsi       # %rsi = 2^6
+                            | 
+0x02e: 6067                 | addq %rsi, %rdi       # %rdi = 2^7
+0x030: 2067                 | rrmovq %rsi, %rdi     # Copy 2^6 to %rdi
+0x032: 6077                 | addq %rdi, %rdi       # %rdi = 2^7
+                            | 
+0x034: 6078                 | addq %rdi, %r8         # %r8 = 2^8
+0x036: 2078                 | rrmovq %rdi, %r8      # Copy 2^7 to %r8
+0x038: 6088                 | addq %r8, %r8         # %r8 = 2^8
+                            | 
+0x03a: 6089                 | addq %r8, %r9         # %r9 = 2^9
+0x03c: 2089                 | rrmovq %r8, %r9       # Copy 2^8 to %r9
+0x03e: 6099                 | addq %r9, %r9         # %r9 = 2^9
+                            | 
+0x040: 609a                 | addq %r9, %r10       # %r10 = 2^10
+0x042: 209a                 | rrmovq %r9, %r10      # Copy 2^9 to %r10
+0x044: 60aa                 | addq %r10, %r10       # %r10 = 2^10
+                            | 
+                            | 
+0x046: 60ab                 | addq %r10, %r11       # %r11 = 2^11
+0x048: 20ab                 | rrmovq %r10, %r11     # Copy 2^10 to %r11
+0x04a: 60bb                 | addq %r11, %r11       # %r11 = 2^11
+                            | 
+0x04c: 60bc                 | addq %r11, %r12       # %r12 = 2^12
+0x04e: 20bc                 | rrmovq %r11, %r12     # Copy 2^11 to %r12
+0x050: 60cc                 | addq %r12, %r12       # %r12 = 2^12
+                            | 
+0x052: 60cd                 | addq %r12, %r13       # %r13 = 2^13
+0x054: 20cd                 | rrmovq %r12, %r13     # Copy 2^12 to %r13
+0x056: 60dd                 | addq %r13, %r13       # %r13 = 2^13
+                            | 
+0x058: 60de                 | addq %r13, %r14       # %r14 = 2^14
+0x05a: 20de                 | rrmovq %r13, %r14     # Copy 2^13 to %r14
+0x05c: 60ee                 | addq %r14, %r14       # %r14 = 2^14
+                            | 
+0x05e: 00                   | halt
+                            | 
