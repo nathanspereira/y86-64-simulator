@@ -152,11 +152,7 @@ void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB, 
 // Multiplexer, + - ^ &
 uint64_t ExecuteStage::aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun)
 {
-   if (aluFun == ADDQ)
-   {
-      return aluB + aluA;
-   }
-   else if (aluFun == SUBQ)
+   if (aluFun == SUBQ)
    {
       return aluB - aluA;
    }
@@ -169,7 +165,7 @@ uint64_t ExecuteStage::aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t al
       return aluB & aluA;
    }
 
-   else return -1;
+   else return aluB + aluA;
 }
 
 uint64_t ExecuteStage::gete_dstE()
@@ -183,14 +179,43 @@ uint64_t ExecuteStage::gete_valE()
 }
 
 //Lab 9
-bool ExecuteStage::cond(uint64_t E_icode, uint64_t E_ifun) {
-    bool e_Cnd = 0;
-    ConditionCodes *codes = ConditionCodes::getInstance();
+bool ExecuteStage::cond(uint64_t E_icode, uint64_t E_ifun) 
+{
+   bool falsy = false;
+   if (E_icode != IJXX && E_icode != ICMOVXX) 
+   {
+      return 0; 
+   }
+   ConditionCodes * codes = ConditionCodes::getInstance();
+   bool zf = codes ->ConditionCodes::getConditionCode(ZF, falsy);
+   bool sf = codes ->ConditionCodes::getConditionCode(SF, falsy);
+   bool of = codes ->ConditionCodes::getConditionCode(OF, falsy);
 
-    if (icode != 7 && icode != 2) {
-        e_Cnd = 1; 
-    } else {
+   switch (E_ifun)
+   {
+      case (UNCOND): return 1;
 
-    }
+      // jle/cmovle	(sf ^ of) | zf	less than or equal to zero
+      case (LESSEQ): if ((sf ^ of) || zf) return 1;
+
+      // jl/cmovl	(sf ^ of)	less than zero
+      case (LESS): if (sf ^ of) return 1;
+
+      // je/cmove	zf	equal to zero
+      case (EQUAL): if (zf) return 1;
+
+      // jne/cmovne	!zf	not equal to zero
+      case (NOTEQUAL): if (!zf) return 1;
+
+      // jg/cmovg	!(sf ^ of) & !zf	greater than zero
+      case (GREATEREQ): if (!(sf ^ of) && !zf) return 1;
+
+      // jge/cmovge	!(sf ^ of) greater than or equal to zero
+      case (GREATER): if (!(sf ^ of)) return 1;
+
+      default: return 0;
+   }
+   
+
 }
 

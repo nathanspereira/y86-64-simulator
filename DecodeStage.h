@@ -14,8 +14,8 @@ class DecodeStage : public Stage
 		uint64_t builddstM(uint64_t D_icode, uint64_t rA);
 		uint64_t buildvalA(uint64_t valA, uint64_t srcA);
 		uint64_t buildvalB(uint64_t valB, uint64_t srcB);
-		uint64_t getD_valA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE);
-		uint64_t getD_valB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE);
+		uint64_t fwdA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE);
+		uint64_t fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE);
 
 
 

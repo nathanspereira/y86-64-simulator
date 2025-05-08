@@ -49,8 +49,8 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t d_rvalA = regInstance -> RegisterFile::readRegister(srcA, error);
    uint64_t d_rvalB = regInstance -> RegisterFile::readRegister(srcB, error);
 
-   uint64_t valA = getD_valA(srcA, d_rvalA, mreg, wreg, prev_dstE, prev_valE);
-   uint64_t valB = getD_valB(srcB, d_rvalB, mreg, wreg, prev_dstE, prev_valE);
+   uint64_t valA = fwdA(srcA, d_rvalA, mreg, wreg, prev_dstE, prev_valE);
+   uint64_t valB = fwdB(srcB, d_rvalB, mreg, wreg, prev_dstE, prev_valE);
 
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
@@ -154,9 +154,9 @@ uint64_t DecodeStage::builddstM(uint64_t D_icode, uint64_t rA)
 
 
 //tell this method how to grab variabels from other classes (M_dstE, e_valE)
-uint64_t DecodeStage::getD_valA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE)
+uint64_t DecodeStage::fwdA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE)
 {
-   
+   if (d_srcA == RNONE) return 0;
    //You need to pass pointers to the M and W registers to the forwarding methods and access them out of those registers
 
    uint64_t M_dstE = mreg -> getdstE() -> getOutput();
@@ -170,8 +170,10 @@ uint64_t DecodeStage::getD_valA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W *
    else return d_rvalA; // Where does d_rvalA come from?? "value from register file"
 }
 
-uint64_t DecodeStage::getD_valB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE)
+uint64_t DecodeStage::fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE)
 {
+   //prevent this method from selecting a valE value that it doesn't actually use
+   if (d_srcB == RNONE) return 0;
    //You need to pass pointers to the M and W registers to the forwarding methods and access them out of those registers
    uint64_t M_dstE = mreg -> getdstE() -> getOutput();
    uint64_t M_valE = mreg -> getvalE() -> getOutput();
