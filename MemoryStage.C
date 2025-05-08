@@ -13,6 +13,7 @@
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "Memory.h"
 
 
 bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages) 
@@ -32,6 +33,20 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
 
    uint64_t valM = mreg->getvalA()->getOutput() & 0; // will calculate later using valA. Currently holds 0
 
+   uint64_t address = Addr(icode, valE, valA);
+   Memory *mem = Memory::getInstance();
+   
+   bool error = false;
+
+   if (mem_read(icode))
+   {
+      valM = mem -> Memory::getLong(address, error);
+   }
+
+   if (mem_write(icode))
+   {
+      mem -> Memory::putLong(valA, address, error);
+   }
    //sets inputs for next stage
    setWinput(wreg, stat, icode, valE, valM, dstE, dstM);
    return false;
@@ -58,5 +73,41 @@ void MemoryStage::setWinput(W * wreg, uint64_t stat, uint64_t icode,
    wreg->getvalM()->setInput(valM);
    wreg->getdstE()->setInput(dstE);
    wreg->getdstM()->setInput(dstM);
+
 }
+
+// HCL for Addr component
+// word mem_addr = [
+// M_icode in { IRMMOVQ, IPUSHQ, ICALL, IMRMOVQ } : M_valE;
+// M_icode in { IPOPQ, IRET } : M_valA;
+// 1: 0;
+// ];
+uint64_t MemoryStage::Addr(uint64_t M_icode, uint64_t M_valE, uint64_t M_valA)
+{
+   if (M_icode == IRMMOVQ || M_icode == IPUSHQ || M_icode == ICALL || M_icode == IMRMOVQ)
+   {
+      return M_valE;
+   }
+   if (M_icode == IPOPQ || M_icode == IRET)
+   {
+      return M_valA;
+   }
+   else return 0;
+}
+
+//bool mem_read = M_icode in { IMRMOVQ, IPOPQ, IRET };
+bool MemoryStage::mem_read(uint64_t M_icode)
+{
+   return (M_icode == IMRMOVQ || M_icode == IPOPQ || M_icode == IRET);
+   return 0;
+}
+
+//bool mem_write = M_icode in { IRMMOVQ, IPUSHQ, ICALL };
+bool MemoryStage::mem_write(uint64_t M_icode)
+{
+   return (M_icode == IRMMOVQ || M_icode == IPUSHQ || M_icode == ICALL);
+   return 0;
+}
+
+
 
