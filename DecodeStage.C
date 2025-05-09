@@ -209,7 +209,7 @@ uint64_t DecodeStage::fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg
    uint64_t W_dstE = wreg -> getdstE() -> getOutput();
    uint64_t W_valE = wreg -> getvalE() -> getOutput();
    uint64_t W_valM = wreg -> getvalM() -> getOutput();
-   uint64_t W_dstM = wreg -> getvalM() -> getOutput();
+   uint64_t W_dstM = wreg -> getdstM() -> getOutput();
 
    //printf("mvale %lx, w_vale %lx, d_rvalb %lx\n", M_valE, W_valE, d_rvalB);
 
