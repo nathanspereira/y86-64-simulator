@@ -30,8 +30,10 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t valA = mreg ->getvalA()->getOutput();
    uint64_t dstE = mreg ->getdstE()->getOutput();
    uint64_t dstM = mreg->getdstM()->getOutput();   //will calculate later, holds RNONE currently
-
+   uint64_t valM = 0;
+   m_valM = 0;
    //uint64_t valM = 0; // will calculate later using valA. Currently holds 0
+
 
    uint64_t address = Addr(icode, valE, valA);
    Memory *mem = Memory::getInstance();
@@ -41,6 +43,7 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
    if (mem_read(icode))
    {
       m_valM = mem -> Memory::getLong(address, error);
+      valM = m_valM;
    }
    
    if (mem_write(icode))
