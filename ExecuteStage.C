@@ -43,12 +43,14 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    e_valE = aluLogicCircuit(aluA, aluB, aluFun);
 
    bool ccChanged = set_cc(icode);
+   Cnd = cond(icode, ifun);
    e_dstE = set_dstE(icode, Cnd, dstE);
 
    
    bool falsy = false;
 
    ccLogicCircuit(ccChanged, aluA,  aluB,  aluFun, e_valE, falsy);
+   Cnd = cond(icode, ifun);
    setMinput(mreg, stat, icode, Cnd, e_valE, valA, e_dstE, dstM);
    return false;
 }
@@ -130,6 +132,7 @@ uint64_t ExecuteStage::set_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE)
 // Probably NOT where the problem is 
 void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB,  uint64_t aluFun, uint64_t E_valE, bool falsy)
 {
+   falsy = false;
    ConditionCodes * codes = ConditionCodes::getInstance();
    
    if (ccChanged)

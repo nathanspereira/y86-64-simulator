@@ -73,7 +73,7 @@ bool ConditionCodes::getConditionCode(int32_t ccNum, bool & error)
 void ConditionCodes::setConditionCode(bool value, int32_t ccNum, 
                                       bool & error)
 {
-   if (ccNum == 3 || ccNum == 6 || ccNum == 2 )
+   if (ccNum == OF || ccNum == SF || ccNum == ZF )
    {
 	   if (value)
       {
