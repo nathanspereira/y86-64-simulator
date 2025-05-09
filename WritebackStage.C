@@ -31,10 +31,14 @@ void WritebackStage::doClockHigh(PipeReg **pregs)
     W * wreg = (W *) pregs[WREG];
     uint64_t valE = wreg->getvalE()->getOutput();
     uint64_t dstE = wreg->getdstE()->getOutput();
+
+    uint64_t dstM = wreg->getdstM()->getOutput(); 
+    uint64_t valM = wreg->getvalM()->getOutput(); 
+
     RegisterFile * reg = RegisterFile::getInstance();
     bool alwaysFalse = false; 
+    bool alwaysFalseTwo = false;
+
     reg->RegisterFile::writeRegister(valE, dstE, alwaysFalse);
-    
-    uint64_t dstM = wreg->getvalM()->getOutput(); 
-    
+    reg->RegisterFile::writeRegister(valM, dstM, alwaysFalseTwo);
 }

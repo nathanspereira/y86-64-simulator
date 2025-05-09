@@ -31,7 +31,7 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t dstE = mreg ->getdstE()->getOutput();
    uint64_t dstM = mreg->getdstM()->getOutput();   //will calculate later, holds RNONE currently
 
-   uint64_t valM = mreg->getvalA()->getOutput() & 0; // will calculate later using valA. Currently holds 0
+   //uint64_t valM = 0; // will calculate later using valA. Currently holds 0
 
    uint64_t address = Addr(icode, valE, valA);
    Memory *mem = Memory::getInstance();
@@ -42,13 +42,13 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
    {
       m_valM = mem -> Memory::getLong(address, error);
    }
-
+   
    if (mem_write(icode))
    {
       mem -> Memory::putLong(valA, address, error);
    }
    //sets inputs for next stage
-   setWinput(wreg, stat, icode, valE, valM, dstE, dstM);
+   setWinput(wreg, stat, icode, valE, m_valM, dstE, dstM);
    return false;
 }
 
@@ -70,7 +70,7 @@ void MemoryStage::setWinput(W * wreg, uint64_t stat, uint64_t icode,
    wreg->getstat()->setInput(stat);
    wreg->geticode()->setInput(icode);
    wreg->getvalE()->setInput(valE);
-   wreg->getvalM()->setInput(valM);
+   wreg->getvalM()->setInput(m_valM);
    wreg->getdstE()->setInput(dstE);
    wreg->getdstM()->setInput(dstM);
 
@@ -99,14 +99,12 @@ uint64_t MemoryStage::Addr(uint64_t M_icode, uint64_t M_valE, uint64_t M_valA)
 bool MemoryStage::mem_read(uint64_t M_icode)
 {
    return (M_icode == IMRMOVQ || M_icode == IPOPQ || M_icode == IRET);
-   return 0;
 }
 
 //bool mem_write = M_icode in { IRMMOVQ, IPUSHQ, ICALL };
 bool MemoryStage::mem_write(uint64_t M_icode)
 {
    return (M_icode == IRMMOVQ || M_icode == IPUSHQ || M_icode == ICALL);
-   return 0;
 }
 
 uint64_t MemoryStage::getValM()
