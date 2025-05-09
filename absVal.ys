@@ -12,8 +12,9 @@
       andq %r8, %r8
       rrmovq %r8, %r9
       irmovq $0xffffffffffffffff, %r12 #Starts the calculations to find the absolute value
+      irmovq $1, %r13
       xorq %r12, %r9
-      addq $1, %r9
+      addq %r13, %r9
       cmovge %r8, %r9 #uses the 1st number if non negative (Can't just use number everytime because this turns positive numbers negative)
       rmmovq %r9, (%r10)
 
@@ -26,7 +27,7 @@
       andq %r8, %r8
       rrmovq %r8, %r9
       xorq %r12, %r9
-      addq $1, %r9
+      addq %r13, %r9
       cmovge %r8, %r9
       rmmovq %r9, (%r11)
 
@@ -39,7 +40,7 @@
       andq %r8, %r8
       rrmovq %r8, %r9
       xorq %r12, %r9
-      addq $1, %r9
+      addq %r13, %r9
       cmovge %r8, %r9
       rmmovq %r9, (%r11)
 
@@ -52,7 +53,7 @@
       andq %r8, %r8
       rrmovq %r8, %r9
       xorq %r12, %r9
-      addq $1, %r9
+      addq %r13, %r9
       cmovge %r8, %r9
       rmmovq %r9, (%r11)
 
@@ -65,7 +66,7 @@
       andq %r8, %r8
       rrmovq %r8, %r9
       xorq %r12, %r9
-      addq $1, %r9
+      addq %r13, %r9
       cmovge %r8, %r9
       rmmovq %r9, (%r11)
 
