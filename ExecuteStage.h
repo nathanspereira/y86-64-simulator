@@ -10,7 +10,7 @@ class ExecuteStage : public Stage
                 uint64_t getAluB(uint64_t E_icode, uint64_t E_valB);
                 uint64_t getAluFun(uint64_t E_icode, uint64_t E_ifun);
                 uint64_t aluLogicCircuit(uint64_t aluA, uint64_t aluB, uint64_t aluFun);
-                void ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB,  uint64_t aluFun, uint64_t E_valE, bool falsy);
+                void ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB,  uint64_t aluFun, uint64_t E_valE, bool &falsy);
                 uint64_t set_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE);
                 bool cond(uint64_t E_icode, uint64_t E_ifun);
 
