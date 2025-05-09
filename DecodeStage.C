@@ -23,6 +23,7 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages)
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
    ExecuteStage * e = (ExecuteStage *) stages[ESTAGE];
+   MemoryStage * m = (MemoryStage *) stages[ESTAGE];
 
     // Grabs initialized values from previous stage's setInput method.
     // Everything here is used in Decode stage, grabbed from previous stage.
@@ -39,6 +40,7 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t dstE = builddstE(icode, rB); //e -> ExecuteStage::gete_dstE();
    uint64_t prev_valE = e -> ExecuteStage::gete_valE();
    uint64_t prev_dstE = e -> ExecuteStage::gete_dstE();
+   uint64_t m_valM = m -> MemoryStage::getValM();
 
    uint64_t dstM = builddstM(icode, rA); //(uint64_t D_icode, uint64_t rA)
    uint64_t srcA = buildsrcA(icode, rA); //(uint64_t D_icode, uint64_t rA)
@@ -49,8 +51,8 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t d_rvalA = regInstance -> RegisterFile::readRegister(srcA, error);
    uint64_t d_rvalB = regInstance -> RegisterFile::readRegister(srcB, error);
 
-   uint64_t valA = fwdA(srcA, d_rvalA, mreg, wreg, prev_dstE, prev_valE);
-   uint64_t valB = fwdB(srcB, d_rvalB, mreg, wreg, prev_dstE, prev_valE);
+   uint64_t valA = fwdA(srcA, d_rvalA, mreg, wreg, prev_dstE, prev_valE, valP, icode, m_valM);
+   uint64_t valB = fwdB(srcB, d_rvalB, mreg, wreg, prev_dstE, prev_valE, m_valM);
 
     // initialize inputs for next stage, based on what next stage needs
     setEinput(ereg, stat, icode, ifun, valC, valA, valB, dstE, dstM, srcA, srcB);
@@ -152,38 +154,69 @@ uint64_t DecodeStage::builddstM(uint64_t D_icode, uint64_t rA)
    }
 }
 
+// //HCL for Sel+FwdA
+
+// word d_valA = [
+// D_icode in { ICALL, IJXX } : D_valP;
+// d_srcA == RNONE: 0;
+// d_srcA == e_dstE : e_valE;   # value computed by ExecuteStage
+// d_srcA == M_dstM: m_valM;  # value obtained from Memory by MemoryStage
+// d_srcA == M_dstE: M_valE;  # value in M register
+// d_srcA == W_dstM: W_valM;  # value in W register
+// d_srcA == W_dstE : W_valE; # value in W register
+// 1 : d_rvalA;  # value from register file
+// ];
 
 //tell this method how to grab variabels from other classes (M_dstE, e_valE)
-uint64_t DecodeStage::fwdA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE)
+uint64_t DecodeStage::fwdA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE, 
+                                          uint64_t D_valP, uint64_t D_icode, uint64_t m_valM)
 {
-   if (d_srcA == RNONE) return 0;
+
    //You need to pass pointers to the M and W registers to the forwarding methods and access them out of those registers
 
    uint64_t M_dstE = mreg -> getdstE() -> getOutput();
+   uint64_t M_dstM = mreg -> getdstM() -> getOutput();
    uint64_t M_valE = mreg -> getvalE() -> getOutput();
    uint64_t W_dstE = wreg -> getdstE() -> getOutput();
-   uint64_t W_valE = wreg -> getvalE() -> getOutput();
 
-   if (d_srcA == e_dstE) return e_valE;
-   else if (d_srcA == M_dstE) return M_valE;
-   else if (d_srcA == W_dstE) return W_valE;
-   else return d_rvalA; // Where does d_rvalA come from?? "value from register file"
+   uint64_t W_dstM = wreg -> getdstM() -> getOutput();
+
+   uint64_t W_valE = wreg -> getvalE() -> getOutput();
+   uint64_t W_valM = wreg -> getvalM() -> getOutput();
+
+   
+   if (D_icode == ICALL || D_icode == IJXX) return D_valP;
+   if (d_srcA == RNONE) return 0;
+   if (d_srcA == e_dstE) return e_valE;  // value computed by ExecuteStage
+   if (d_srcA == M_dstM) return m_valM; //value obtained from Memory by MemoryStage
+   if (d_srcA == M_dstE) return M_valE; //value in M register
+   if (d_srcA == W_dstM) return W_valM; // value in W register
+   if (d_srcA == W_dstE) return W_valE; // value in W register
+   else return d_rvalA;
+   
+   
 }
 
-uint64_t DecodeStage::fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg, uint64_t e_dstE, uint64_t e_valE)
+uint64_t DecodeStage::fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg, 
+                                                                  uint64_t e_dstE, uint64_t e_valE, uint64_t m_valM)
 {
    //prevent this method from selecting a valE value that it doesn't actually use
    if (d_srcB == RNONE) return 0;
    //You need to pass pointers to the M and W registers to the forwarding methods and access them out of those registers
    uint64_t M_dstE = mreg -> getdstE() -> getOutput();
+   uint64_t M_dstM = mreg -> getdstM() -> getOutput();
    uint64_t M_valE = mreg -> getvalE() -> getOutput();
    uint64_t W_dstE = wreg -> getdstE() -> getOutput();
    uint64_t W_valE = wreg -> getvalE() -> getOutput();
+   uint64_t W_valM = wreg -> getvalM() -> getOutput();
+   uint64_t W_dstM = wreg -> getvalM() -> getOutput();
 
    //printf("mvale %lx, w_vale %lx, d_rvalb %lx\n", M_valE, W_valE, d_rvalB);
 
-   if (d_srcB == e_dstE) return e_valE;
-   else if (d_srcB == M_dstE) return M_valE;
-   else if (d_srcB == W_dstE) return W_valE;
+   if (d_srcB == e_dstE) return e_valE; // value computed by ExecuteStage
+   if (d_srcB == M_dstM) return m_valM; // value obtained from Memory by MemoryStage
+   if (d_srcB == M_dstE) return M_valE; // value in M register
+   if (d_srcB == W_dstM) return W_valM; // value in W register 
+   if (d_srcB == W_dstE) return W_valE; // value in W register
    else return d_rvalB; 
 }

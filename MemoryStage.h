@@ -8,6 +8,9 @@ class MemoryStage : public Stage
                 uint64_t Addr(uint64_t M_icode, uint64_t M_valE, uint64_t M_valA);
                 bool mem_write(uint64_t M_icode);
                 bool mem_read(uint64_t M_icode);
+                uint64_t getValM();
+        private:
+                uint64_t m_valM;
                 
 };
 

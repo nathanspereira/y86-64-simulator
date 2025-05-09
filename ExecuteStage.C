@@ -40,7 +40,7 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    uint64_t aluA = getAluA(icode, valA, valC);
    uint64_t aluB = getAluB(icode, valB);
    uint64_t aluFun = getAluFun(icode, ifun); 
-    e_valE = aluLogicCircuit(aluA, aluB, aluFun);
+   e_valE = aluLogicCircuit(aluA, aluB, aluFun);
 
    bool ccChanged = set_cc(icode);
    e_dstE = set_dstE(icode, Cnd, dstE);

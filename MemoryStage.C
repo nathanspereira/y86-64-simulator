@@ -40,7 +40,7 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
 
    if (mem_read(icode))
    {
-      valM = mem -> Memory::getLong(address, error);
+      m_valM = mem -> Memory::getLong(address, error);
    }
 
    if (mem_write(icode))
@@ -107,6 +107,11 @@ bool MemoryStage::mem_write(uint64_t M_icode)
 {
    return (M_icode == IRMMOVQ || M_icode == IPUSHQ || M_icode == ICALL);
    return 0;
+}
+
+uint64_t MemoryStage::getValM()
+{
+   return m_valM;
 }
 
 
