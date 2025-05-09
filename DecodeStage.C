@@ -23,7 +23,7 @@ bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages)
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
    ExecuteStage * e = (ExecuteStage *) stages[ESTAGE];
-   MemoryStage * m = (MemoryStage *) stages[ESTAGE];
+   MemoryStage * m = (MemoryStage *) stages[MSTAGE];
 
     // Grabs initialized values from previous stage's setInput method.
     // Everything here is used in Decode stage, grabbed from previous stage.
@@ -144,7 +144,7 @@ uint64_t DecodeStage::builddstE(uint64_t D_icode, uint64_t rB)
 
 uint64_t DecodeStage::builddstM(uint64_t D_icode, uint64_t rA)
 {
-   if (D_icode == IRRMOVQ || D_icode == IPOPQ)
+   if (D_icode == IMRMOVQ || D_icode == IPOPQ)
    {
       return rA;
    }
@@ -178,9 +178,7 @@ uint64_t DecodeStage::fwdA(uint64_t d_srcA, uint64_t d_rvalA, M * mreg, W * wreg
    uint64_t M_dstM = mreg -> getdstM() -> getOutput();
    uint64_t M_valE = mreg -> getvalE() -> getOutput();
    uint64_t W_dstE = wreg -> getdstE() -> getOutput();
-
    uint64_t W_dstM = wreg -> getdstM() -> getOutput();
-
    uint64_t W_valE = wreg -> getvalE() -> getOutput();
    uint64_t W_valM = wreg -> getvalM() -> getOutput();
 

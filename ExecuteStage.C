@@ -114,7 +114,7 @@ bool ExecuteStage::set_cc(uint64_t E_icode)
 ////HCL turned into C++ for dstE component
 uint64_t ExecuteStage::set_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE)
 {
-   if ((E_icode == IRRMOVQ) && (!e_Cnd)) 
+   if ((E_icode == IRRMOVQ) && !(e_Cnd)) 
    {
       return RNONE;
    }
