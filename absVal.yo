@@ -1,0 +1,80 @@
+0x000:                      |       .pos 0
+                            | #Put your code here. You'll need some
+                            | #initialization code and then five chunks
+                            | #of code that are basically identical.
+                            | 
+0x000: 30faf800000000000000 |       irmovq $list, %r10
+                            | 
+0x00a: 508a0000000000000000 |       mrmovq (%r10), %r8 #first run-through
+0x014: 10                   |       nop #3 nops because we don't have bubling yet
+0x015: 10                   |       nop
+0x016: 10                   |       nop
+0x017: 6288                 |       andq %r8, %r8
+0x019: 2089                 |       rrmovq %r8, %r9
+0x01b: 30fcffffffffffffffff |       irmovq $0xffffffffffffffff, %r12 #Starts the calculations to find the absolute value
+0x025: 30fd0100000000000000 |       irmovq $1, %r13
+0x02f: 63c9                 |       xorq %r12, %r9
+0x031: 60d9                 |       addq %r13, %r9
+0x033: 2589                 |       cmovge %r8, %r9 #uses the 1st number if non negative (Can't just use number everytime because this turns positive numbers negative)
+0x035: 409a0000000000000000 |       rmmovq %r9, (%r10)
+                            | 
+0x03f: 30fb0800000000000000 |       irmovq $8, %r11 #2nd run through repeated for other numbers in the list
+0x049: 60ab                 |       addq %r10, %r11
+0x04b: 508b0000000000000000 |       mrmovq (%r11), %r8
+0x055: 10                   |       nop
+0x056: 10                   |       nop
+0x057: 10                   |       nop
+0x058: 6288                 |       andq %r8, %r8
+0x05a: 2089                 |       rrmovq %r8, %r9
+0x05c: 63c9                 |       xorq %r12, %r9
+0x05e: 60d9                 |       addq %r13, %r9
+0x060: 2589                 |       cmovge %r8, %r9
+0x062: 409b0000000000000000 |       rmmovq %r9, (%r11)
+                            | 
+0x06c: 30fb1000000000000000 |       irmovq $16, %r11
+0x076: 60ab                 |       addq %r10, %r11
+0x078: 508b0000000000000000 |       mrmovq (%r11), %r8
+0x082: 10                   |       nop
+0x083: 10                   |       nop
+0x084: 10                   |       nop
+0x085: 6288                 |       andq %r8, %r8
+0x087: 2089                 |       rrmovq %r8, %r9
+0x089: 63c9                 |       xorq %r12, %r9
+0x08b: 60d9                 |       addq %r13, %r9
+0x08d: 2589                 |       cmovge %r8, %r9
+0x08f: 409b0000000000000000 |       rmmovq %r9, (%r11)
+                            | 
+0x099: 30fb1800000000000000 |       irmovq $24, %r11
+0x0a3: 60ab                 |       addq %r10, %r11
+0x0a5: 508b0000000000000000 |       mrmovq (%r11), %r8
+0x0af: 10                   |       nop
+0x0b0: 10                   |       nop
+0x0b1: 10                   |       nop
+0x0b2: 6288                 |       andq %r8, %r8
+0x0b4: 2089                 |       rrmovq %r8, %r9
+0x0b6: 63c9                 |       xorq %r12, %r9
+0x0b8: 60d9                 |       addq %r13, %r9
+0x0ba: 2589                 |       cmovge %r8, %r9
+0x0bc: 409b0000000000000000 |       rmmovq %r9, (%r11)
+                            | 
+0x0c6: 30fb2000000000000000 |       irmovq $32, %r11
+0x0d0: 60ab                 |       addq %r10, %r11
+0x0d2: 508b0000000000000000 |       mrmovq (%r11), %r8
+0x0dc: 10                   |       nop
+0x0dd: 10                   |       nop
+0x0de: 10                   |       nop
+0x0df: 6288                 |       andq %r8, %r8
+0x0e1: 2089                 |       rrmovq %r8, %r9
+0x0e3: 63c9                 |       xorq %r12, %r9
+0x0e5: 60d9                 |       addq %r13, %r9
+0x0e7: 2589                 |       cmovge %r8, %r9
+0x0e9: 409b0000000000000000 |       rmmovq %r9, (%r11)
+                            | 
+0x0f3: 00                   |       halt
+                            | 
+0x0f8:                      |       .align 8
+0x0f8: feffffffffffffff     | list: .quad -2            #at end: 2
+0x100: 0500000000000000     |       .quad 5             #at end: 5
+0x108: f1ffffffffffffff     |       .quad -15           #at end: f
+0x110: 0000000000000000     |       .quad 0             #at end: 0
+0x118: ffffffffffffffff     |       .quad -1            #at end: 1
