@@ -196,28 +196,22 @@ bool ExecuteStage::cond(uint64_t E_icode, uint64_t E_ifun)
       case UNCOND: return 1;
 
       // jle/cmovle	(sf ^ of) | zf	less than or equal to zero
-      case LESSEQ: if ((sf ^ of) || zf) return 1;
-      else return 0;
+      case LESSEQ: return ((sf ^ of) || zf);
 
       // jl/cmovl	(sf ^ of)	less than zero
-      case LESS: if (sf ^ of) return 1;
-      else return 0;
+      case LESS: return (sf ^ of);
 
       // je/cmove	zf	equal to zero
-      case EQUAL: if (zf) return 1;
-      else return 0;
+      case EQUAL: return (zf);;
 
       // jne/cmovne	!zf	not equal to zero
-      case NOTEQUAL: if (!zf) return 1;
-      else return 0;
+      case NOTEQUAL: return (!zf);;
 
       // jg/cmovg	!(sf ^ of) & !zf	greater than zero
-      case GREATEREQ: if (!(sf ^ of) && !zf) return 1;
-      else return 0;
+      case GREATER: return (!(sf ^ of) && !zf);
 
       // jge/cmovge	!(sf ^ of) greater than or equal to zero
-      case (GREATER): if (!(sf ^ of)) return 1;
-      else return 0;
+      case GREATEREQ: return !(sf ^ of);
       
       default: return 0;
    }
