@@ -334,6 +334,7 @@ void FetchStage::calculateControlSignals(E *ereg, Stage **stages, D *dreg, M *mr
 
     D_stall = (E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB);
 
-    D_bubble = (E_icode == IJXX && !e_Cnd) || (E_icode != IMRMOVQ && E_icode != IPOPQ) && 
-                        (E_dstM == d_srcA || E_dstM == d_srcB) && (D_icode == IRET || E_icode == IRET || M_icode == IRET);
+    D_bubble = ((E_icode == IJXX && !e_Cnd) || (!((E_icode == IMRMOVQ && E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB))) && (D_icode == IRET || E_icode == IRET || M_icode == IRET));
 }
+
+
