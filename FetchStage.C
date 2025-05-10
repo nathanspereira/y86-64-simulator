@@ -110,7 +110,8 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
 
 
    //normal is only called on the F register field (predPC) if F_stall is not true.  
-   //In addition, normal should only be applied to the D register fields if D_stall is not true. 
+   //In addition, normal should only be applied to the D register fields if D_stall is not true.
+
    // LAB10
    if (!F_stall){
       freg->getpredPC()-> normal();
@@ -297,7 +298,7 @@ bool FetchStage::instr_valid(uint64_t f_icode)
 //returns the value to be stored in the stat field. It will be passed to setDInput.
 //The values SADR, SINS, SHLT and SAOK are defined in Status.h.
 //LAB10
-void FetchStage::setStat(bool mem_error, bool instr_valid, uint64_t f_icode, uint64_t stat)
+void FetchStage::setStat(bool mem_error, bool instr_valid, uint64_t f_icode, uint64_t &stat)
 {
 	if (mem_error){
 	       	stat = SADR;

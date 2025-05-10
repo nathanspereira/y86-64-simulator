@@ -10,7 +10,7 @@ class FetchStage: public Stage
                      uint64_t rA, uint64_t rB,
                      uint64_t valC, uint64_t valP);
       bool instr_valid(uint64_t f_icode);
-      void setStat(bool mem_error, bool instr_valid, uint64_t f_icode, uint64_t stat);
+      void setStat(bool mem_error, bool instr_valid, uint64_t f_icode, uint64_t &stat);
       void calculateControlSignals(E *ereg, Stage **stages, D *dreg, M *mreg);
       void normalD(D *dreg);
       void bubbleD(D *dreg);
