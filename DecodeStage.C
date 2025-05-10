@@ -255,7 +255,7 @@ uint64_t DecodeStage::fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg
 //LAB10
 void DecodeStage::calculateControlSignals(uint64_t E_icode, uint64_t E_dstM, uint64_t E_cnd){
 
-   E_bubble = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)); //(E_icode == IJXX && !E_cnd)
+   E_bubble = ((E_icode == IJXX && !E_cnd) || (E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)); 
 }
 
 //LAB10
