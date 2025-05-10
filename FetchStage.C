@@ -17,6 +17,7 @@
 #include "Instructions.h"
 #include "Tools.h"
 #include "Memory.h"
+#include "WritebackStage.h"
 
 /*
  * doClockLow:
@@ -177,15 +178,16 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
 uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
 {
    //uint64_t f_pc = 0;
-   uint64_t m_icode = mreg->geticode()->getOutput();
+   uint64_t M_icode = mreg->geticode()->getOutput();
+   uint64_t W_icode = wreg->geticode()->getOutput();
 
    uint64_t m_cnd = mreg->getCnd()->getOutput();
 
-   if (m_icode == IJXX && !m_cnd) // (M_icode == IJXX) && !(M_Cnd) : M_valA;
+   if (M_icode == IJXX && !m_cnd) // (M_icode == IJXX) && !(M_Cnd) : M_valA;
    {
       return mreg->getvalA()->getOutput();
    }
-   else if (m_icode == IRET) // W_icode == IRET : W_valM;
+   else if (W_icode == IRET) // W_icode == IRET : W_valM;
    {
       return wreg->getvalM()->getOutput();
    }
@@ -327,11 +329,11 @@ void FetchStage::calculateControlSignals(E *ereg, Stage **stages, D *dreg, M *mr
     uint64_t D_icode = dreg->geticode()->getOutput();
     uint64_t M_icode = mreg->geticode()->getOutput();
 
-    F_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)) 
+    F_stall = (E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)
                                                    || (D_icode == IRET || E_icode == IRET || M_icode == IRET);
 
-    D_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB));
+    D_stall = (E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB);
 
-    D_bubble = (E_icode == IJXX && !e_Cnd) || (!((E_icode == IMRMOVQ || E_icode == IPOPQ) && 
-                        (E_dstM == d_srcA || E_dstM == d_srcB)) && ((D_icode == IRET || E_icode == IRET || M_icode == IRET)));
+    D_bubble = (E_icode == IJXX && !e_Cnd) || (E_icode != IMRMOVQ && E_icode != IPOPQ) && 
+                        (E_dstM == d_srcA || E_dstM == d_srcB) && (D_icode == IRET || E_icode == IRET || M_icode == IRET);
 }
