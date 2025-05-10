@@ -21,6 +21,7 @@
 bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    E * ereg = (E *) pregs[EREG];
    M * mreg = (M *) pregs[MREG];
+   W * wreg = (W *) pregs[WREG];
    
    // values from previous stage that are needed for current stage
    uint64_t stat = ereg->getstat()->getOutput();
@@ -31,10 +32,10 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    uint64_t valB = ereg->getvalB()->getOutput(); 
    uint64_t dstE = ereg->getdstE()->getOutput();
    uint64_t dstM = ereg->getdstM()->getOutput();   
-   uint64_t srcA = ereg->getsrcA()->getOutput();   
-   uint64_t srcB = ereg->getsrcB()->getOutput(); 
+   //uint64_t srcA = ereg->getsrcA()->getOutput();   
+   //uint64_t srcB = ereg->getsrcB()->getOutput(); 
 
-   uint64_t Cnd = 0; // why are we setting this to 0 ??
+   //uint64_t Cnd = 0; // why are we setting this to 0 ??
 
    // alu related variables
    uint64_t aluA = getAluA(icode, valA, valC);
@@ -42,14 +43,19 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    uint64_t aluFun = getAluFun(icode, ifun); 
    e_valE = aluLogicCircuit(aluA, aluB, aluFun);
    bool falsy = false;
-   bool ccChanged = set_cc(icode);
+
+   uint64_t m_stat = mreg->getstat()->getOutput();
+   uint64_t W_stat = wreg->getstat()->getOutput(); 
+
+   calculateControlSignals(m_stat, W_stat);
+   bool ccChanged = set_cc(icode, m_stat, W_stat);
    //sets conidtion codes
    ccLogicCircuit(ccChanged, aluA,  aluB,  aluFun, e_valE, falsy);
-   Cnd = cond(icode, ifun);
   
-   e_dstE = set_dstE(icode, Cnd, dstE);
+   e_Cnd = cond(icode, ifun);
+   e_dstE = set_dstE(icode, e_Cnd, dstE);
 
-   setMinput(mreg, stat, icode, Cnd, e_valE, valA, e_dstE, dstM);
+   setMinput(mreg, stat, icode, e_Cnd, e_valE, valA, e_dstE, dstM);
    return false;
 }
 
@@ -57,6 +63,28 @@ void ExecuteStage::doClockHigh(PipeReg **pregs)
 {
    
    M * mreg = (M *) pregs[MREG];
+
+   if(M_bubble){
+      bubbleM(mreg);
+   }
+   else {
+      normalM(mreg);
+   }
+   
+}
+
+void ExecuteStage::bubbleM(M * mreg){
+   mreg->getstat()->bubble(SAOK);
+   mreg->geticode()->bubble(INOP);
+   mreg->getCnd()->bubble();
+   mreg->getvalE()->bubble();
+   mreg->getvalA()->bubble();
+   mreg->getdstE()->bubble(RNONE);
+   mreg->getdstM()->bubble(RNONE);
+
+}
+
+void ExecuteStage::normalM(M * mreg){
    mreg->getstat()->normal();
    mreg->geticode()->normal();
    mreg->getCnd()->normal();
@@ -64,6 +92,7 @@ void ExecuteStage::doClockHigh(PipeReg **pregs)
    mreg->getvalA()->normal();
    mreg->getdstE()->normal();
    mreg->getdstM()->normal();
+
 }
 
 void ExecuteStage::setMinput(M * mreg, uint64_t stat, uint64_t icode, 
@@ -106,9 +135,9 @@ uint64_t ExecuteStage::getAluFun(uint64_t E_icode, uint64_t E_ifun)
    else return ADDQ;
 }
 
-bool ExecuteStage::set_cc(uint64_t E_icode)
+bool ExecuteStage::set_cc(uint64_t E_icode, uint64_t m_stat, uint64_t W_stat)
 {
-   return E_icode == IOPQ;
+   return ((E_icode == IOPQ) && !(m_stat == SADR || m_stat == SINS || m_stat == SHLT) && !(W_stat == SADR || W_stat == SINS || W_stat == SHLT));
 }
 
 ////HCL turned into C++ for dstE component
@@ -217,5 +246,13 @@ bool ExecuteStage::cond(uint64_t E_icode, uint64_t E_ifun)
    }
    
 
+}
+
+void ExecuteStage::calculateControlSignals(uint64_t m_stat, uint64_t W_stat){
+   M_bubble = (m_stat == SADR || m_stat == SINS || m_stat == SHLT) || (W_stat == SADR || W_stat == SINS || W_stat == SHLT);
+}
+
+uint64_t ExecuteStage::gete_Cnd(){
+	return e_Cnd;
 }
 

@@ -5,10 +5,13 @@
 #include "PipeReg.h"
 #include "F.h"
 #include "D.h"
+#include "E.h"
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
 #include "FetchStage.h"
+#include "DecodeStage.h"
+#include "ExecuteStage.h"
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
@@ -30,24 +33,34 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
+   E * ereg = (E *) pregs[EREG];
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
 
    // initializes reg values to 0 or none
-   uint64_t f_pc = 0, icode = INOP, ifun = 0, valC = 0 , valP = 0;
+   uint64_t f_pc = 0, icode = INOP, ifun = FNONE, valC = 0 , valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
    //code missing here to select the value of the PC
    //and fetch the instruction from memory
 
+   //DecodeStage * d = (DecodeStage *) stages[DSTAGE];
+   //ExecuteStage * e = (ExecuteStage *) stages[ESTAGE];
+   calculateControlSignals(ereg, stages, dreg, mreg);
+
+
    f_pc = selectPC(freg, mreg, wreg); // doClockLow method needs to call selectPC to obtain the value of f_pc
    
    // The needRegIds and needValC methods need to be called because 
    // the results of these are input to a method that you'll need to write called PCincrement
-   bool error = false;
-   uint64_t mem = Memory::getInstance() -> getByte(f_pc, error);
-   icode = Tools::getBits(mem, 4, 7);
-   ifun = Tools::getBits(mem, 0, 3);
+   bool mem_error = false;
+   uint64_t mem = Memory::getInstance() -> getByte(f_pc, mem_error);
+   
+   if(mem_error == false ){
+   	icode = Tools::getBits(mem, 4, 7);
+   	ifun = Tools::getBits(mem, 0, 3);
+   }
+
    bool need_valC = needValC(icode);
    bool needRegId = needRegIds(icode);
 
@@ -59,7 +72,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //written.
    //The value passed to setInput below will need to be changed
 
-   freg->getpredPC()->setInput(f_pc + 1);
+   //freg->getpredPC()->setInput(f_pc + 1);
 
    // The value returned by PCincrement is stored in valP
    valP = PCincrement(f_pc, needRegId, need_valC);
@@ -87,14 +100,37 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
 
-   freg->getpredPC()->normal();
-   dreg->getstat()->normal();
-   dreg->geticode()->normal();
-   dreg->getifun()->normal();
-   dreg->getrA()->normal();
-   dreg->getrB()->normal();
-   dreg->getvalC()->normal();
-   dreg->getvalP()->normal();
+   if(!F_stall){
+      freg->getpredPC()-> normal();
+   }
+   if(!D_bubble){
+      bubbleD(dreg);
+   }
+   else if (!D_stall){
+      normalD(dreg);
+   }
+}
+
+void FetchStage::normalD(D *dreg)
+{
+    dreg->getstat()->normal();
+    dreg->geticode()->normal();
+    dreg->getifun()->normal();
+    dreg->getrA()->normal();
+    dreg->getrB()->normal();
+    dreg->getvalC()->normal();
+    dreg->getvalP()->normal();
+}
+
+void FetchStage::bubbleD(D *dreg)
+{
+    dreg->getstat()->bubble(SAOK);
+    dreg->geticode()->bubble(INOP);
+    dreg->getifun()->bubble();
+    dreg->getrA()->bubble(RNONE);
+    dreg->getrB()->bubble(RNONE);
+    dreg->getvalC()->bubble();
+    dreg->getvalP()->bubble();
 }
 
 /* setDInput
@@ -125,9 +161,12 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
 
 uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
 {
-   uint64_t f_pc = 0;
+   //uint64_t f_pc = 0;
    uint64_t m_icode = mreg->geticode()->getOutput();
-   if (m_icode == IJXX && !(mreg->getCnd()->getOutput() )) // (M_icode == IJXX) && !(M_Cnd) : M_valA;
+
+   uint64_t m_cnd = mreg->getCnd()->getOutput();
+
+   if (m_icode == IJXX && !m_cnd) // (M_icode == IJXX) && !(M_Cnd) : M_valA;
    {
       return mreg->getvalA()->getOutput();
    }
@@ -170,12 +209,13 @@ bool FetchStage::needValC(uint64_t f_icode)
 
 uint64_t FetchStage::buildValC(uint64_t f_pc, bool needRegBool, bool need_valC)
 {
+   uint64_t valC = 0;
    if (need_valC)
    {
       uint8_t temp[8];
       bool error = false;
       f_pc++;
-      uint64_t valC = 0;
+      //uint64_t valC = 0;
 
       if (needRegBool)
       {
@@ -192,8 +232,8 @@ uint64_t FetchStage::buildValC(uint64_t f_pc, bool needRegBool, bool need_valC)
          valC = Tools::buildLong(temp) ;
          
       }
-      return valC;
    }
+   return valC;
 }
 
 //  inputs are f_icode, f_valC, f_valP
@@ -230,4 +270,44 @@ uint64_t FetchStage::PCincrement(uint64_t f_pc, bool needRegBool, bool need_valC
    return f_pc + 1;
 
 }
-     
+
+//instr_valid method returns true if the icode is valid
+bool FetchStage::instr_valid(uint64_t f_icode)
+{
+	return (f_icode == INOP || f_icode == IHALT || f_icode == IRRMOVQ || f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ || f_icode == IOPQ || f_icode == IJXX || f_icode == ICALL || f_icode == IRET || f_icode == IPUSHQ || f_icode == IPOPQ);
+}
+
+//returns the value to be stored in the stat field. It will be passed to setDInput.
+//The values SADR, SINS, SHLT and SAOK are defined in Status.h.
+uint64_t FetchStage::stat(bool mem_error, bool instr_valid, uint64_t f_icode)
+{
+	if (mem_error){
+	       	return SADR;
+	}
+	if (!instr_valid){ 
+		return SINS;
+	}
+	if (f_icode == IHALT){
+	       	return SHLT;
+	}
+	else {
+		return SAOK;
+	}
+}
+
+void FetchStage::calculateControlSignals(E *ereg, Stage **stages, D *dreg, M *mreg)
+{
+    ExecuteStage * e = (ExecuteStage *) stages[ESTAGE];
+    DecodeStage * d = (DecodeStage *) stages[DSTAGE];
+    uint64_t E_icode = ereg->geticode()->getOutput();
+    uint64_t E_dstM = ereg->getdstM()->getOutput();
+    uint64_t e_Cnd = e->gete_Cnd();
+    uint64_t d_srcA = d->getsrcA();
+    uint64_t d_srcB = d->getsrcB(); 
+    uint64_t D_icode = dreg->geticode()->getOutput();
+    uint64_t M_icode = mreg->geticode()->getOutput();
+
+    F_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)) || (D_icode == IRET || E_icode == IRET || M_icode == IRET);
+    D_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB));
+    D_bubble = (E_icode == IJXX && !e_Cnd) || (!((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)) && ((D_icode == IRET || E_icode == IRET || M_icode == IRET)));
+}

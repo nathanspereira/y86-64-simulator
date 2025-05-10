@@ -25,12 +25,12 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
 
    uint64_t stat = mreg->getstat()->getOutput();
    uint64_t icode = mreg->geticode()->getOutput();
-   uint64_t Cnd = mreg -> getCnd()->getOutput();   //will calculate later, holds 0 currently
+   //uint64_t Cnd = mreg -> getCnd()->getOutput();   //will calculate later, holds 0 currently
    uint64_t valE = mreg ->getvalE()->getOutput();  //will calculate later, holds 0 currently
    uint64_t valA = mreg ->getvalA()->getOutput();
    uint64_t dstE = mreg ->getdstE()->getOutput();
    uint64_t dstM = mreg->getdstM()->getOutput();   //will calculate later, holds RNONE currently
-   uint64_t valM = 0;
+   //uint64_t valM = 0;
    m_valM = 0;
    //uint64_t valM = 0; // will calculate later using valA. Currently holds 0
 
@@ -43,13 +43,18 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
    if (mem_read(icode))
    {
       m_valM = mem -> Memory::getLong(address, error);
-      valM = m_valM;
+      //valM = m_valM;
    }
    
    if (mem_write(icode))
    {
       mem -> Memory::putLong(valA, address, error);
    }
+
+   if (error){
+      stat = SADR;
+   }
+
    //sets inputs for next stage
    setWinput(wreg, stat, icode, valE, m_valM, dstE, dstM);
    return false;
