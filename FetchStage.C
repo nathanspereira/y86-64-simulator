@@ -116,10 +116,10 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
    if (!F_stall){
       freg->getpredPC()-> normal();
    }
-   if (!D_bubble){
+   if (D_bubble){
       bubbleD(dreg);
    }
-   if (!D_stall){
+   else if (!D_stall){
       normalD(dreg);
    }
 }
@@ -303,10 +303,10 @@ void FetchStage::setStat(bool mem_error, bool instr_valid, uint64_t f_icode, uin
 	if (mem_error){
 	       	stat = SADR;
 	}
-	if (!instr_valid){ 
+	else if (!instr_valid){ 
 		stat = SINS;
 	}
-	if (f_icode == IHALT){
+	else if (f_icode == IHALT){
 	       	stat = SHLT;
 	}
 	else {

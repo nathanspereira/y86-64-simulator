@@ -144,8 +144,8 @@ uint64_t ExecuteStage::getAluFun(uint64_t E_icode, uint64_t E_ifun)
 
 bool ExecuteStage::set_cc(uint64_t E_icode, uint64_t m_stat, uint64_t W_stat)
 {
-   return ((E_icode == IOPQ) && (!m_stat == SADR || !m_stat == SINS || !m_stat == SHLT) 
-                              && (!W_stat == SADR || !W_stat == SINS || !W_stat == SHLT));
+   return ((E_icode == IOPQ) && (m_stat != SADR || m_stat != SINS || m_stat != SHLT) 
+                              && (W_stat != SADR || W_stat != SINS || W_stat != SHLT));
 }
 
 ////HCL turned into C++ for dstE component
