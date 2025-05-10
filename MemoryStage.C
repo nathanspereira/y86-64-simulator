@@ -32,6 +32,7 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
    uint64_t dstM = mreg->getdstM()->getOutput();   //will calculate later, holds RNONE currently
    //uint64_t valM = 0;
    m_valM = 0;
+   m_stat = 0;
    //uint64_t valM = 0; // will calculate later using valA. Currently holds 0
 
 
@@ -51,9 +52,11 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
       mem -> Memory::putLong(valA, address, error);
    }
 
-   if (error){
+   if (error) //LAB10
+   {
       stat = SADR;
    }
+
 
    //sets inputs for next stage
    setWinput(wreg, stat, icode, valE, m_valM, dstE, dstM);
@@ -118,6 +121,12 @@ bool MemoryStage::mem_write(uint64_t M_icode)
 uint64_t MemoryStage::getValM()
 {
    return m_valM;
+}
+
+//LAB10
+uint64_t MemoryStage::getm_stat()
+{
+   return m_stat;
 }
 
 

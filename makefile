@@ -51,6 +51,7 @@ W.o: W.h PipeReg.h PipeRegField.h
 
 clean:
 	rm -f $(OBJ) yess
+	rm *.sdump
 
 run:
 	make clean

@@ -46,7 +46,9 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    //DecodeStage * d = (DecodeStage *) stages[DSTAGE];
    //ExecuteStage * e = (ExecuteStage *) stages[ESTAGE];
-   calculateControlSignals(ereg, stages, dreg, mreg);
+
+
+   calculateControlSignals(ereg, stages, dreg, mreg); //LAB10
 
 
    f_pc = selectPC(freg, mreg, wreg); // doClockLow method needs to call selectPC to obtain the value of f_pc
@@ -56,6 +58,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    bool mem_error = false;
    uint64_t mem = Memory::getInstance() -> getByte(f_pc, mem_error);
    
+   //LAB10
    if(mem_error == false ){
    	icode = Tools::getBits(mem, 4, 7);
    	ifun = Tools::getBits(mem, 0, 3);
@@ -82,6 +85,11 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    uint64_t F_predPC = predictPC(icode, valC, valP);
    freg -> getpredPC() -> setInput(F_predPC);
+   
+   bool isValid = instr_valid(icode);  //LAB10
+   setStat(mem_error, isValid, icode, stat); //LAB10
+
+   //stat = getStat(mem_error, isValid, icode);
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
@@ -100,17 +108,22 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
 
-   if(!F_stall){
+
+   //normal is only called on the F register field (predPC) if F_stall is not true.  
+   //In addition, normal should only be applied to the D register fields if D_stall is not true. 
+   // LAB10
+   if (!F_stall){
       freg->getpredPC()-> normal();
    }
-   if(!D_bubble){
+   if (!D_bubble){
       bubbleD(dreg);
    }
-   else if (!D_stall){
+   if (!D_stall){
       normalD(dreg);
    }
 }
 
+// LAB10
 void FetchStage::normalD(D *dreg)
 {
     dreg->getstat()->normal();
@@ -122,6 +135,7 @@ void FetchStage::normalD(D *dreg)
     dreg->getvalP()->normal();
 }
 
+// LAB10
 void FetchStage::bubbleD(D *dreg)
 {
     dreg->getstat()->bubble(SAOK);
@@ -272,29 +286,34 @@ uint64_t FetchStage::PCincrement(uint64_t f_pc, bool needRegBool, bool need_valC
 }
 
 //instr_valid method returns true if the icode is valid
+//LAB10
 bool FetchStage::instr_valid(uint64_t f_icode)
 {
-	return (f_icode == INOP || f_icode == IHALT || f_icode == IRRMOVQ || f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ || f_icode == IOPQ || f_icode == IJXX || f_icode == ICALL || f_icode == IRET || f_icode == IPUSHQ || f_icode == IPOPQ);
+	return (f_icode == INOP || f_icode == IHALT || f_icode == IRRMOVQ || f_icode == IIRMOVQ || f_icode == IRMMOVQ
+            || f_icode == IMRMOVQ || f_icode == IOPQ || f_icode == IJXX || f_icode == ICALL || f_icode == IRET
+            || f_icode == IPUSHQ || f_icode == IPOPQ);
 }
 
 //returns the value to be stored in the stat field. It will be passed to setDInput.
 //The values SADR, SINS, SHLT and SAOK are defined in Status.h.
-uint64_t FetchStage::stat(bool mem_error, bool instr_valid, uint64_t f_icode)
+//LAB10
+void FetchStage::setStat(bool mem_error, bool instr_valid, uint64_t f_icode, uint64_t stat)
 {
 	if (mem_error){
-	       	return SADR;
+	       	stat = SADR;
 	}
 	if (!instr_valid){ 
-		return SINS;
+		stat = SINS;
 	}
 	if (f_icode == IHALT){
-	       	return SHLT;
+	       	stat = SHLT;
 	}
 	else {
-		return SAOK;
+		stat = SAOK;
 	}
 }
 
+//LAB10
 void FetchStage::calculateControlSignals(E *ereg, Stage **stages, D *dreg, M *mreg)
 {
     ExecuteStage * e = (ExecuteStage *) stages[ESTAGE];
@@ -302,12 +321,16 @@ void FetchStage::calculateControlSignals(E *ereg, Stage **stages, D *dreg, M *mr
     uint64_t E_icode = ereg->geticode()->getOutput();
     uint64_t E_dstM = ereg->getdstM()->getOutput();
     uint64_t e_Cnd = e->gete_Cnd();
-    uint64_t d_srcA = d->getsrcA();
-    uint64_t d_srcB = d->getsrcB(); 
+    uint64_t d_srcA = d->DecodeStage::get_srcA();
+    uint64_t d_srcB = d->DecodeStage::get_srcB(); 
     uint64_t D_icode = dreg->geticode()->getOutput();
     uint64_t M_icode = mreg->geticode()->getOutput();
 
-    F_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)) || (D_icode == IRET || E_icode == IRET || M_icode == IRET);
+    F_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)) 
+                                                   || (D_icode == IRET || E_icode == IRET || M_icode == IRET);
+
     D_stall = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB));
-    D_bubble = (E_icode == IJXX && !e_Cnd) || (!((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)) && ((D_icode == IRET || E_icode == IRET || M_icode == IRET)));
+
+    D_bubble = (E_icode == IJXX && !e_Cnd) || (!((E_icode == IMRMOVQ || E_icode == IPOPQ) && 
+                        (E_dstM == d_srcA || E_dstM == d_srcB)) && ((D_icode == IRET || E_icode == IRET || M_icode == IRET)));
 }

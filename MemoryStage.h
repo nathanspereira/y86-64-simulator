@@ -12,6 +12,7 @@ class MemoryStage : public Stage
 		uint64_t getm_stat();
         private:
                 uint64_t m_valM;
+                uint64_t m_stat;
                 
 };
 

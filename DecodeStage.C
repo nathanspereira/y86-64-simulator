@@ -14,6 +14,7 @@
 #include "MemoryStage.h"
 #include "DecodeStage.h"
 #include "Debug.h"
+#include "Status.h"
 
 
 bool DecodeStage::doClockLow(PipeReg **pregs, Stage **stages) 
@@ -68,6 +69,7 @@ void DecodeStage::doClockHigh(PipeReg **pregs)
 {
    E * ereg = (E *) pregs[EREG];
 
+   //LAB10
    if (E_bubble) {
       bubbleE(ereg);
    } 
@@ -77,6 +79,7 @@ void DecodeStage::doClockHigh(PipeReg **pregs)
 
 }
 
+//LAB10
 void DecodeStage::normalE(E *ereg)
 {
     ereg->getstat()->normal();
@@ -91,9 +94,10 @@ void DecodeStage::normalE(E *ereg)
     ereg->getsrcB()->normal();
 }
 
+//LAB10
 void DecodeStage::bubbleE(E *ereg)
 {
-    ereg->getstat()->bubble();
+    ereg->getstat()->bubble(SAOK);
     ereg->geticode()->bubble(INOP);
     ereg->getifun()->bubble();
     ereg->getvalC()->bubble();
@@ -248,16 +252,19 @@ uint64_t DecodeStage::fwdB(uint64_t d_srcB, uint64_t d_rvalB, M * mreg, W * wreg
    else return d_rvalB; 
 }
 
+//LAB10
 void DecodeStage::calculateControlSignals(uint64_t E_icode, uint64_t E_dstM, uint64_t E_cnd){
 
-   E_bubble = ((E_icode == IJXX && !E_cnd) || ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)));
+   E_bubble = ((E_icode == IMRMOVQ || E_icode == IPOPQ) && (E_dstM == d_srcA || E_dstM == d_srcB)); //(E_icode == IJXX && !E_cnd)
 }
 
-uint64_t DecodeStage::getsrcA(){
+//LAB10
+uint64_t DecodeStage::get_srcA(){
     return d_srcA;
 }
 
-uint64_t DecodeStage::getsrcB(){
+//LAB10
+uint64_t DecodeStage::get_srcB(){
     return d_srcB;
 }
 

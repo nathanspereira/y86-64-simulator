@@ -15,6 +15,7 @@
 #include "Instructions.h"
 #include "ConditionCodes.h"
 #include "Tools.h"
+#include "MemoryStage.h"
 
 
 
@@ -44,14 +45,19 @@ bool ExecuteStage::doClockLow(PipeReg **pregs, Stage **stages) {
    e_valE = aluLogicCircuit(aluA, aluB, aluFun);
    bool falsy = false;
 
-   uint64_t m_stat = mreg->getstat()->getOutput();
+   
    uint64_t W_stat = wreg->getstat()->getOutput(); 
 
-   calculateControlSignals(m_stat, W_stat);
+   //forwarded m_stat
+   MemoryStage * m = (MemoryStage *) stages[MSTAGE];
+   uint64_t m_stat = m -> MemoryStage::getm_stat();
+
+   calculateControlSignals(m_stat, W_stat); //LAB10
+
    bool ccChanged = set_cc(icode, m_stat, W_stat);
    //sets conidtion codes
    ccLogicCircuit(ccChanged, aluA,  aluB,  aluFun, e_valE, falsy);
-  
+   
    e_Cnd = cond(icode, ifun);
    e_dstE = set_dstE(icode, e_Cnd, dstE);
 
@@ -63,7 +69,7 @@ void ExecuteStage::doClockHigh(PipeReg **pregs)
 {
    
    M * mreg = (M *) pregs[MREG];
-
+   //LAB10
    if(M_bubble){
       bubbleM(mreg);
    }
@@ -73,6 +79,7 @@ void ExecuteStage::doClockHigh(PipeReg **pregs)
    
 }
 
+//LAB10
 void ExecuteStage::bubbleM(M * mreg){
    mreg->getstat()->bubble(SAOK);
    mreg->geticode()->bubble(INOP);
@@ -83,7 +90,7 @@ void ExecuteStage::bubbleM(M * mreg){
    mreg->getdstM()->bubble(RNONE);
 
 }
-
+//LAB10
 void ExecuteStage::normalM(M * mreg){
    mreg->getstat()->normal();
    mreg->geticode()->normal();
@@ -137,7 +144,8 @@ uint64_t ExecuteStage::getAluFun(uint64_t E_icode, uint64_t E_ifun)
 
 bool ExecuteStage::set_cc(uint64_t E_icode, uint64_t m_stat, uint64_t W_stat)
 {
-   return ((E_icode == IOPQ) && !(m_stat == SADR || m_stat == SINS || m_stat == SHLT) && !(W_stat == SADR || W_stat == SINS || W_stat == SHLT));
+   return ((E_icode == IOPQ) && (!m_stat == SADR || !m_stat == SINS || !m_stat == SHLT) 
+                              && (!W_stat == SADR || !W_stat == SINS || !W_stat == SHLT));
 }
 
 ////HCL turned into C++ for dstE component
@@ -156,7 +164,6 @@ uint64_t ExecuteStage::set_dstE(uint64_t E_icode, uint64_t e_Cnd, uint64_t dstE)
 
 // If the set_cc component returns true then the CC component will be used to set the condition codes 
 // (in the ConditionCodes class) to 0 or 1. 
-// Probably NOT where the problem is 
 void ExecuteStage::ccLogicCircuit(bool ccChanged, uint64_t aluA, uint64_t aluB,  uint64_t aluFun, uint64_t E_valE, bool &falsy)
 {
    ConditionCodes * codes = ConditionCodes::getInstance();
@@ -247,11 +254,11 @@ bool ExecuteStage::cond(uint64_t E_icode, uint64_t E_ifun)
    
 
 }
-
+//LAB10
 void ExecuteStage::calculateControlSignals(uint64_t m_stat, uint64_t W_stat){
-   M_bubble = (m_stat == SADR || m_stat == SINS || m_stat == SHLT) || (W_stat == SADR || W_stat == SINS || W_stat == SHLT);
+   M_bubble = ((m_stat == SADR || m_stat == SINS || m_stat == SHLT) || (W_stat == SADR || W_stat == SINS || W_stat == SHLT));
 }
-
+//LAB10
 uint64_t ExecuteStage::gete_Cnd(){
 	return e_Cnd;
 }

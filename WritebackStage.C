@@ -24,7 +24,7 @@ bool WritebackStage::doClockLow(PipeReg **pregs, Stage **stages)
     
     uint64_t stat = wreg->getstat()->getOutput();
 
-    return stat != SAOK;
+    return stat != SAOK; //LAB10
 }
 
 
