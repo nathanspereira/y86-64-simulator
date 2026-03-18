@@ -20,7 +20,8 @@ The simulator is structured into modular components representing the pipeline re
 ## How to Run
 1. **Compile the project:**
    ```bash
-   make```
+   make
+    ```
 
 2. Run a program:
    ```./yess <program_name>.yo```
